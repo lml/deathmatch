@@ -1,0 +1,32 @@
+{
+  "name": "ost-deathmatch",
+  "private": true,
+  "version": "0.0.1",
+  "description": "A protype to try out marionette, react and perhaps others.",
+  "author": "Lakshmi Narasimhan <lakshmi@folds.in>",
+  "license": "BSD3",
+  "devDependencies": {
+      "bower": "",
+      "stylus": "",
+      "nib": "",
+      "uglifyjs": "",
+      "coffee-script": "",
+      "jshint": "",
+      "tiny-lr": "",
+      "gulp": "",
+      "gulp-util": "",
+      "gulp-stylus": "",
+      "gulp-uglify": "",
+      "gulp-rename": "",
+      "gulp-concat": "",
+      "gulp-plumber": "",
+      "gulp-notify": "",
+      "gulp-jshint": "",
+      "gulp-clean": "",
+      "gulp-inject": "",
+      "gulp-connect": "",
+      "gulp-livereload": "",
+      "gulp-size": "",
+      "streamqueue": ""
+  }
+}

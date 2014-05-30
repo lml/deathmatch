@@ -1,0 +1,32 @@
+{
+  "name": "ost-deathmatch",
+  "version": "0.0.1",
+  "authors": [
+    "Lakshmi Narasimhan <lakshmi@folds.in>"
+  ],
+  "description": "A prototype to compare and contrast marionette, react and perhaps others.",
+  "moduleType": [
+    "es6"
+  ],
+  "license": "BSD3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": "1.1.*",
+    "underscore": "1.6.*",
+    "marionette": "2.*",
+    "backbone-associations": "0.*",
+    "react": "0.*",
+    "jquery": "2.*",
+    "quill": "0.*"
+  },
+  "devDependencies": {
+    "backbone-faux-server": "0.*"
+  }
+}
