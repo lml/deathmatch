@@ -1,6 +1,6 @@
 Backbone = require('backbone')
 require 'backbone_associations'
-require './combo_simple_choice.js.coffee '
+require './combo_simple_choice.js.coffee'
 
 class ExerciseEditor.ComboChoice extends Backbone.AssociatedModel
   relations: [

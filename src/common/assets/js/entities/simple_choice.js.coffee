@@ -18,4 +18,4 @@ class ExerciseEditor.SimpleChoice extends Backbone.AssociatedModel
     pos = @get('position')
     opos = other.get('position')
     return 0 if pos == opos
-    -1 if pos > opos else 1
+    if pos > opos then -1 else 1

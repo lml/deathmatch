@@ -5,8 +5,27 @@
   "description": "A protype to try out marionette, react and perhaps others.",
   "author": "Lakshmi Narasimhan <lakshmi@folds.in>",
   "license": "BSD3",
+  "browserify": {
+    "transform": [
+      "browserify-shim",
+      "coffeeify"
+    ]
+  },
+  "browserify-shim": {
+    "plugin": {
+      "exports": "plugin",
+      "depends": [
+        "jquery:$"
+      ]
+    }
+  },
   "devDependencies": {
       "bower": "",
+      "browserify": "",
+      "exorcist": "",
+      "browserify-shim": "",
+      "coffeeify": "",
+      "watchify": "",
       "stylus": "",
       "nib": "",
       "uglifyjs": "",
@@ -19,6 +38,7 @@
       "gulp-uglify": "",
       "gulp-rename": "",
       "gulp-concat": "",
+      "gulp-coffee": "",
       "gulp-plumber": "",
       "gulp-notify": "",
       "gulp-jshint": "",
@@ -27,6 +47,8 @@
       "gulp-connect": "",
       "gulp-livereload": "",
       "gulp-size": "",
-      "streamqueue": ""
+      "streamqueue": "",
+      "vinyl-source-stream": "",
+      "vinyl-transform": ""
   }
 }
