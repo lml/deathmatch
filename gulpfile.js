@@ -1,5 +1,8 @@
 var gulp = require('gulp'),
     gutil = require('gulp-util'),
+    connect = require('connect'),
+    livereload = require('gulp-livereload'),
+    http = require('http'),
     coffee = require('gulp-coffee'),
     stylus = require('gulp-stylus'),
     nib = require('nib'),
@@ -9,8 +12,6 @@ var gulp = require('gulp'),
     notify = require('gulp-notify'),
     jshint = require('gulp-jshint'),
     clean = require('gulp-clean'),
-    connect = require('gulp-connect'),
-    livereload = require('gulp-livereload'),
     size = require('gulp-size'),
     streamQueue = require('streamqueue'),
     vsource = require('vinyl-source-stream'),
@@ -36,8 +37,10 @@ gulp.task('clean', function() {
     return gulp.src([
             folders.dest + '/assets/css',
             folders.dest + '/assets/js',
-            folders.dest + '/assets/images', folders.dest],
-            {read: false})
+            folders.dest + '/assets/images', folders.dest
+        ], {
+            read: false
+        })
         .pipe(clean());
 });
 
@@ -64,17 +67,18 @@ function withBowerPaths(config, cb) {
  */
 function marionetteLib(config) {
     withBowerPaths(config, function(bowerPaths) {
-        return streamQueue({objectMode: true},
-            gulp.src(bowerPaths.jquery),
-            gulp.src(bowerPaths.underscore),
-            gulp.src(bowerPaths.backbone),
-            gulp.src(bowerPaths['backbone-associations']),
-            gulp.src(bowerPaths.marionette[0]),
-            gulp.src(bowerPaths.quill)
-        )
+        return streamQueue({
+                    objectMode: true
+                },
+                gulp.src(bowerPaths.jquery),
+                gulp.src(bowerPaths.underscore),
+                gulp.src(bowerPaths.backbone),
+                gulp.src(bowerPaths['backbone-associations']),
+                gulp.src(bowerPaths.marionette[0])
+            )
             .pipe(concat('lib.js'))
             .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
-      });
+    });
 }
 
 function marionetteApp(config) {
@@ -102,10 +106,6 @@ function marionetteApp(config) {
                 marionette: {
                     path: bowerPaths.marionette[0],
                     exports: 'Marionette'
-                },
-                quill: {
-                    path: bowerPaths.quill,
-                    exports: 'quill'
                 }
             }
         })
@@ -114,24 +114,33 @@ function marionetteApp(config) {
                 'underscore',
                 'backbone',
                 'backbone_associations',
-                'marionette',
-                'quill'
+                'marionette'
             ])
-            .bundle({debug: config.dev})
+            .bundle({
+                debug: config.dev
+            })
             .on('error', handleErrors)
-        .pipe(vsource('app.js'))
-        .pipe(vtrans(function () { return exorcist(folders.dest + '/marionette/assets/js/app.js.map'); }))
-        .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+            .pipe(vsource('app.js'))
+            .pipe(vtrans(function() {
+                return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
+            }))
+            .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
     });
 }
 
-function html(config) {
-    gulp.src(folders.src + '/marionette/index.html')
+var sourcePaths = {
+    html: folders.src + '/marionette/index.html',
+    stylus: folders.src + '/marionette/assets/css/main.styl'
+};
+
+function runHTML(config) {
+
+    gulp.src(sourcePaths.html)
         .pipe(gulp.dest(folders.dest + '/marionette'));
 }
 
 function runStylus(config) {
-    gulp.src(folders.src + '/marionette/assets/css/main.styl')
+    gulp.src(sourcePaths.stylus)
         .pipe(stylus({
             errors: config.dev,
             compress: !config.dev,
@@ -160,17 +169,42 @@ function build(config) {
     marionetteLib(config);
     marionetteApp(config);
     runStylus(config);
-    html(config);
+    runHTML(config);
 }
 
-gulp.task('serve', function () {
-    build({live: true, dev: true});
+gulp.task('serve', function() {
+    var conf = {
+        live: true,
+        dev: true
+    };
+    var server = connect(),
+        reloader = livereload();
+
+    var watchAndBuild = function(path, cb) {
+        gulp.watch(path, function() {
+            console.log("File changed: " + path);
+            cb(conf);
+        });
+    };
+    watchAndBuild(sourcePaths.html, runHTML);
+    watchAndBuild(sourcePaths.stylus, runStylus);
+    build(conf);
+    gulp.watch(folders.dest + "/**", function(path) {
+        reloader.changed(path);
+    });
+    server.use(connect.static(folders.dest)).listen(8081);
 });
 
-gulp.task('dev', function () {
-    build({live: false, dev: true});
+gulp.task('dev', function() {
+    build({
+        live: false,
+        dev: true
+    });
 });
 
-gulp.task('prod', function () {
-    build({live: false, dev: false});
+gulp.task('prod', function() {
+    build({
+        live: false,
+        dev: false
+    });
 });

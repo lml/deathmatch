@@ -23,6 +23,7 @@
       "bower": "",
       "browserify": "",
       "exorcist": "",
+      "connect": "",
       "browserify-shim": "",
       "coffeeify": "",
       "watchify": "",
@@ -40,15 +41,15 @@
       "gulp-concat": "",
       "gulp-coffee": "",
       "gulp-plumber": "",
+      "gulp-livereload": "",
       "gulp-notify": "",
       "gulp-jshint": "",
       "gulp-clean": "",
       "gulp-inject": "",
-      "gulp-connect": "",
-      "gulp-livereload": "",
       "gulp-size": "",
       "streamqueue": "",
       "vinyl-source-stream": "",
-      "vinyl-transform": ""
+      "vinyl-transform": "",
+      "quilljs": ""
   }
 }

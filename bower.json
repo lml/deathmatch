@@ -23,8 +23,7 @@
     "marionette": "2.*",
     "backbone-associations": "0.*",
     "react": "0.*",
-    "jquery": "2.*",
-    "quill": "0.*"
+    "jquery": "2.*"
   },
   "devDependencies": {
     "backbone-faux-server": "0.*"
