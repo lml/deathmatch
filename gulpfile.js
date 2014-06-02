@@ -17,9 +17,10 @@ var gulp = require('gulp'),
     vsource = require('vinyl-source-stream'),
     vtrans = require('vinyl-transform'),
     browserify = require('browserify'),
+    globalShim = require('browserify-global-shim'),
     exorcist = require('exorcist'),
     watchify = require('watchify'),
-    bower = require('bower');
+    wiredep = require('wiredep');
 
 var folders = {
     src: "src",
@@ -29,6 +30,7 @@ var folders = {
     common: "common",
     projects: ['marionette', 'react']
 };
+
 
 /*
  * Clean destination folders.
@@ -43,12 +45,6 @@ gulp.task('clean', function() {
         })
         .pipe(clean());
 });
-
-function withBowerPaths(config, cb) {
-    bower.commands.list({
-        paths: true
-    }).on('end', cb);
-}
 
 /*
  *  Marionette build:
@@ -66,66 +62,36 @@ function withBowerPaths(config, cb) {
  *     - Deploy to destination
  */
 function marionetteLib(config) {
-    withBowerPaths(config, function(bowerPaths) {
-        return streamQueue({
-                    objectMode: true
-                },
-                gulp.src(bowerPaths.jquery),
-                gulp.src(bowerPaths.underscore),
-                gulp.src(bowerPaths.backbone),
-                gulp.src(bowerPaths['backbone-associations']),
-                gulp.src(bowerPaths.marionette[0])
-            )
-            .pipe(concat('lib.js'))
-            .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+    var bower = wiredep({
+        exclude:  [/lib\/backbone.marionette.js/, /react/]
     });
+    gulp.src(bower.js)
+        .pipe(concat('lib.js'))
+        .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
 }
+
 
 function marionetteApp(config) {
     var xify = config.live ? watchify : browserify;
-    withBowerPaths(config, function(bowerPaths) {
-        xify({
-            entries: ['./' + folders.src + '/marionette/assets/js/app.js.coffee'],
-            extensions: ['.js', '.coffee'],
-            shim: {
-                jquery: {
-                    path: bowerPaths.jquery,
-                    exports: '$'
-                },
-                underscore: {
-                    path: bowerPaths.underscore,
-                    exports: '_'
-                },
-                backbone: {
-                    path: bowerPaths.backbone,
-                    exports: 'Backbone'
-                },
-                backbone_associations: {
-                    path: bowerPaths.backbone_associations
-                },
-                marionette: {
-                    path: bowerPaths.marionette[0],
-                    exports: 'Marionette'
-                }
-            }
-        })
-            .external([
-                'jquery',
-                'underscore',
-                'backbone',
-                'backbone_associations',
-                'marionette'
-            ])
-            .bundle({
-                debug: config.dev
-            })
-            .on('error', handleErrors)
-            .pipe(vsource('app.js'))
-            .pipe(vtrans(function() {
-                return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
-            }))
-            .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+    var shims = globalShim.configure({
+        'jQuery': '$',
+        'underscore': '_',
+        'backbone': 'Backbone',
+        'backbone-associations': 'Backbone.AssociatedModel',
+        'marionette': 'Marionette'
     });
+    xify({
+        entries: ['./' + folders.src + '/marionette/assets/js/app.js.coffee'],
+        extensions: ['.js', '.coffee']})
+        .bundle({
+            debug: config.dev
+        })
+        .on('error', handleErrors)
+        .pipe(vsource('app.js'))
+        .pipe(vtrans(function() {
+            return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
+         }))
+        .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
 }
 
 var sourcePaths = {
@@ -134,7 +100,6 @@ var sourcePaths = {
 };
 
 function runHTML(config) {
-
     gulp.src(sourcePaths.html)
         .pipe(gulp.dest(folders.dest + '/marionette'));
 }
@@ -181,7 +146,7 @@ gulp.task('serve', function() {
         reloader = livereload();
 
     var watchAndBuild = function(path, cb) {
-        gulp.watch(path, function() {
+        gulp.watch(path, {maxListeners: 999}, function() {
             console.log("File changed: " + path);
             cb(conf);
         });
@@ -189,7 +154,7 @@ gulp.task('serve', function() {
     watchAndBuild(sourcePaths.html, runHTML);
     watchAndBuild(sourcePaths.stylus, runStylus);
     build(conf);
-    gulp.watch(folders.dest + "/**", function(path) {
+    gulp.watch(folders.dest + "/**", {maxListeners: 999}, function(path) {
         reloader.changed(path);
     });
     server.use(connect.static(folders.dest)).listen(8081);

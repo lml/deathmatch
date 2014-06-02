@@ -1,0 +1,1 @@
+ExerciseEditor.module 'PartEditor', {}

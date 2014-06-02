@@ -1,5 +1,4 @@
-Backbone = require 'backbone'
-require 'backbone_associations'
+ExerciseEditor = require('./_namespace.js.coffee')
 require './question.js.coffee'
 
 class ExerciseEditor.MultipleChoiceQuestion extends ExerciseEditor.Question

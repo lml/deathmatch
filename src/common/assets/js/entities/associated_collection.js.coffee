@@ -1,6 +1,4 @@
-Backbone = require 'backbone'
-require 'backbone_associations'
-
+ExerciseEditor = require('./_namespace.js.coffee')
 class ExerciseEditor.AssociatedCollection extends Backbone.Collection
   owner: () ->
     if @parents? and @parents[0]? then return @parents[0]

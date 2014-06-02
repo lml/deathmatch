@@ -1,6 +1,5 @@
-Backbone = require 'backbone'
-require 'backbone_associations'
-require './store.js.coffee'
+ExerciseEditor = require('./_namespace.js.coffee')
+ExerciseEditor.Store = require './store.js.coffee'
 require './simple_choice.js.coffee'
 
 class ExerciseEditor.ComboSimpleChoice extends Backbone.AssociatedModel

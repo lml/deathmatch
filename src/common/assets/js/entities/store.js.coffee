@@ -1,49 +1,51 @@
-ExerciseEditor.module(
-  "Store",
-  (Store, App, Backbone, Marionette, $, _) ->
+ExerciseEditor = require('./_namespace.js.coffee')
+Store = {}
 
-    theStore = {}
-    pendingModelActions = {}
 
-    Store.addModel = (model) ->
-      className = if model.constructor.name? then model.constructor.name else model.constructor.toString().match(/^function\s(.+)\(/)[1]
-      id = model.get('id')
+theStore = {}
+pendingModelActions = {}
 
-      # If the ID isn't set yet, delay adding it to the store
-      if not id?
-        @listenToOnce model, 'change:id', () -> Store.addModel(model)
-        return
+Store.addModel = (model) ->
+  className = if model.constructor.name? then model.constructor.name else model.constructor.toString().match(/^function\s(.+)\(/)[1]
+  id = model.get('id')
 
-      theStore[className] ?= {}
+  # If the ID isn't set yet, delay adding it to the store
+  if not id?
+    @listenToOnce model, 'change:id', () -> Store.addModel(model)
+    return
 
-      if theStore[className][id]? 
-        if theStore[className][id].cid == model.cid then return
-        throw "model already exists in store"
+  theStore[className] ?= {}
 
-      theStore[className][id] = model
+  if theStore[className][id]? 
+    if theStore[className][id].cid == model.cid then return
+    throw "model already exists in store"
 
-      processPendingModelActions(className, id)
+  theStore[className][id] = model
 
-      # When the model is destroyed, remove it from the store, making sure to
-      # flush out any pending actions
-      @listenToOnce model, 'destroy', () -> 
-        processPendingModelActions(className, id)
-        theStore[className][id] = null
+  processPendingModelActions(className, id)
 
-    Store.onModelAvailable = (className, id, action) ->
-      getPendingModelActions(className, id).push(action)
-      processPendingModelActions(className, id)
+  # When the model is destroyed, remove it from the store, making sure to
+  # flush out any pending actions
+  @listenToOnce model, 'destroy', () -> 
+    processPendingModelActions(className, id)
+    theStore[className][id] = null
 
-    getPendingModelActions = (className, id) ->
-      pendingModelActions[className] ?= {}
-      pendingModelActions[className][id] ?= []
+Store.onModelAvailable = (className, id, action) ->
+  getPendingModelActions(className, id).push(action)
+  processPendingModelActions(className, id)
 
-    processPendingModelActions = (className, id) ->
-      model = theStore[className]?[id]
-      return if not model?
-      actions = getPendingModelActions(className, id)
-      _.each(actions, (action) -> action(model))
-      actions = []
+getPendingModelActions = (className, id) ->
+  pendingModelActions[className] ?= {}
+  pendingModelActions[className][id] ?= []
 
-    Store.getTheStore = () -> theStore
-)
+processPendingModelActions = (className, id) ->
+  model = theStore[className]?[id]
+  return if not model?
+  actions = getPendingModelActions(className, id)
+  _.each(actions, (action) -> action(model))
+  actions = []
+
+Store.getTheStore = () -> theStore
+
+
+module.exports = ExerciseEditor.Store = Store
