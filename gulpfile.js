@@ -31,7 +31,6 @@ var folders = {
     projects: ['marionette', 'react']
 };
 
-
 /*
  * Clean destination folders.
  */
@@ -63,13 +62,12 @@ gulp.task('clean', function() {
  */
 function marionetteLib(config) {
     var bower = wiredep({
-        exclude:  [/lib\/backbone.marionette.js/, /react/]
+        exclude: [/lib\/backbone.marionette.js/, /react/]
     });
     gulp.src(bower.js)
         .pipe(concat('lib.js'))
         .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
 }
-
 
 function marionetteApp(config) {
     var xify = config.live ? watchify : browserify;
@@ -80,18 +78,26 @@ function marionetteApp(config) {
         'backbone-associations': 'Backbone.AssociatedModel',
         'marionette': 'Marionette'
     });
-    xify({
+    var bundler = xify({
         entries: ['./' + folders.src + '/marionette/assets/js/app.js.coffee'],
-        extensions: ['.js', '.coffee']})
-        .bundle({
-            debug: config.dev
-        })
-        .on('error', handleErrors)
-        .pipe(vsource('app.js'))
-        .pipe(vtrans(function() {
-            return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
-         }))
-        .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+        extensions: ['.js', '.coffee']
+    });
+    var bundle = function() {
+        bundler
+            .bundle({
+                debug: config.dev
+            })
+            .on('error', handleErrors)
+            .pipe(vsource('app.js'))
+            .pipe(vtrans(function() {
+                return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
+            }))
+            .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+    };
+    if (config.live) {
+        bundler.on('update', bundle);
+    }
+    bundle();
 }
 
 var sourcePaths = {
@@ -129,7 +135,6 @@ function handleErrors() {
     this.emit('end');
 }
 
-
 function build(config) {
     marionetteLib(config);
     marionetteApp(config);
@@ -146,7 +151,9 @@ gulp.task('serve', function() {
         reloader = livereload();
 
     var watchAndBuild = function(path, cb) {
-        gulp.watch(path, {maxListeners: 999}, function() {
+        gulp.watch(path, {
+            maxListeners: 999
+        }, function() {
             console.log("File changed: " + path);
             cb(conf);
         });
@@ -154,7 +161,9 @@ gulp.task('serve', function() {
     watchAndBuild(sourcePaths.html, runHTML);
     watchAndBuild(sourcePaths.stylus, runStylus);
     build(conf);
-    gulp.watch(folders.dest + "/**", {maxListeners: 999}, function(path) {
+    gulp.watch(folders.dest + "/**", {
+        maxListeners: 999
+    }, function(path) {
         reloader.changed(path);
     });
     server.use(connect.static(folders.dest)).listen(8081);

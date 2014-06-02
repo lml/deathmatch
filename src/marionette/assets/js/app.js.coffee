@@ -7,5 +7,8 @@ Marionette = require 'marionette'
 
 ExerciseEditor.App = new Marionette.Application
 
-ExerciseEditor.App.on "initialize:after", () ->
+ExerciseEditor.App.on "start", () ->
   console.log "Hello world!"
+
+
+ExerciseEditor.App.start()
