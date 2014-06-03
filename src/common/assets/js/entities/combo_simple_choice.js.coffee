@@ -1,5 +1,5 @@
-ExerciseEditor = require('./_namespace.js.coffee')
-ExerciseEditor.Store = require './store.js.coffee'
+require './_namespace.js.coffee'
+require './store.js.coffee'
 require './simple_choice.js.coffee'
 
 class ExerciseEditor.ComboSimpleChoice extends Backbone.AssociatedModel

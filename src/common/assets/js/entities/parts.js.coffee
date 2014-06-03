@@ -1,4 +1,4 @@
-ExerciseEditor = require('./_namespace.js.coffee')
+require './_namespace.js.coffee'
 require './associated_collection.js.coffee'
 require './part.js.coffee'
 

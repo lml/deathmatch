@@ -1,11 +1,58 @@
-<!doctype html5>
+<!doctype html>
 <html>
   <head>
     <title>Marionette: React vs Marionette death match.</title>
     <link href="./assets/css/main.css" rel="stylesheet"/>
+    <link href="./assets/css/quill.snow.css" rel="stylesheet"/>
     <script src="./assets/js/lib.js"></script>
   </head>
   <body>
+    <article class="main">
+      <section id="exercise-content" class="exercise">
+      </section>
+    </article>
+    <script type="text/template" id="part-template">
+      <div class="js-part-container part-container">
+        <div class="js-background-editor background-editor">
+          <div class="ql-container">
+            <div id="background-editor-toolbar" class="ql-bar">
+              <span class="ql-format-group">
+                <span title="Bold" class="ql-format-button ql-bold"></span>
+                <span class="ql-format-separator"></span>
+                <span title="Italic" class="ql-format-button ql-italic"></span>
+                <span class="ql-format-separator"></span>
+                <span title="Underline" class="ql-format-button ql-underline"></span>
+                <span class="ql-format-separator"></span>
+                <span title="Strikethrough" class="ql-format-button ql-strike"></span>
+              </span>
+              <span class="ql-format-group">
+                <span title="List" class="ql-format-button ql-list"></span>
+                <span class="ql-format-separator"></span>
+                <span title="Bullet" class="ql-format-button ql-bullet"></span>
+                <span class="ql-format-separator"></span>
+                <select title="Text Alignment" class="ql-align">
+                  <option value="left" label="Left" selected=""></option>
+                  <option value="center" label="Center"></option>
+                  <option value="right" label="Right"></option>
+                  <option value="justify" label="Justify"></option>
+                </select>
+              </span>
+              <span class="ql-format-group">
+                <span title="Link" class="ql-format-button ql-link"></span>
+              </span>
+            </div>
+            <div id="background-editor" class="ql-editor"></div>
+          </div>
+        </div>
+        <div class="js-background-viewer-container">
+          <button class="js-button-edit-content">Edit</button>
+          <div class="js-background-viewer background-viewer">
+          </div>
+        </div>
+        <div class="js-background-prompter background-prompter">
+        </div>
+      </div>
+    </script>
     <script src="./assets/js/app.js"></script>
   </body>
 </html>

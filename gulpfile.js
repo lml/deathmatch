@@ -130,6 +130,7 @@ function handleErrors() {
         title: "Compile Error",
         message: "<%= error.message %>"
     }).apply(this, args);
+    console.log(args);
 
     // Keep gulp from hanging on this task
     this.emit('end');

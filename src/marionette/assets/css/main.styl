@@ -4,3 +4,41 @@ blackish = #444
 body
     background-color whitish
     color            blackish
+
+.js-part-container
+  &.mode-edit
+    .js-background-editor
+      display block
+    .js-background-viewer-container
+      display none
+    .js-background-prompter
+      display none
+  &.mode-view
+    .js-background-editor
+      display none
+    .js-background-viewer-container
+      display block
+    .js-background-prompter
+      display none
+  &.mode-prompt
+    .js-background-editor
+      display none
+    .js-background-viewer-container
+      display none
+    .js-background-prompter
+      display block
+      
+.js-background-viewer-container
+   position relative
+  .js-button-edit-content
+    display none
+    position absolute
+    top 12px
+    right 12px
+    background-color #ccc
+  &:hover
+    .js-button-edit-content
+      display block
+    
+.js-background-prompter
+  cursor pointer

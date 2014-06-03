@@ -1,4 +1,4 @@
-ExerciseEditor = require('./_namespace.js.coffee')
+require './_namespace.js.coffee'
 require './question.js.coffee'
 
 class ExerciseEditor.MultipleChoiceQuestion extends ExerciseEditor.Question

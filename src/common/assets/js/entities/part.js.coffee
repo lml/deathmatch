@@ -1,4 +1,4 @@
-ExerciseEditor = require('./_namespace.js.coffee')
+require './_namespace.js.coffee'
 require './multiple_choice_question.js.coffee'
 
 class ExerciseEditor.Part extends Backbone.AssociatedModel

@@ -1,6 +1,5 @@
-ExerciseEditor = require('./_namespace.js.coffee')
+require './_namespace.js.coffee'
 Store = {}
-
 
 theStore = {}
 pendingModelActions = {}
