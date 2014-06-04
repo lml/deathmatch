@@ -102,12 +102,18 @@ function marionetteApp(config) {
 
 var sourcePaths = {
     html: folders.src + '/marionette/index.html',
+    css: folders.src + '/marionette/assets/css/*.css',
     stylus: folders.src + '/marionette/assets/css/main.styl'
 };
 
 function runHTML(config) {
     gulp.src(sourcePaths.html)
         .pipe(gulp.dest(folders.dest + '/marionette'));
+}
+
+function runCSS(config) {
+    gulp.src(sourcePaths.css)
+        .pipe(gulp.dest(folders.dest + '/marionette/assets/css'));
 }
 
 function runStylus(config) {
@@ -141,6 +147,7 @@ function build(config) {
     marionetteApp(config);
     runStylus(config);
     runHTML(config);
+    runCSS(config);
 }
 
 gulp.task('serve', function() {

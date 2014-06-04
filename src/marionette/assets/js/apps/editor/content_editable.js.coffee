@@ -92,6 +92,7 @@ class ContentEditable extends Marionette.Behavior
 
   editContent: () ->
     @editor().setHTML @options.loadContent()
+    @editor().focus()
     @setMode 'edit'
 
   save: (cb=null) ->

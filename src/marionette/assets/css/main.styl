@@ -1,9 +1,28 @@
 whitish = #ededed
 blackish = #444
+grey = #ccc
+
+global-reset()
+
+li
+  list-style-type none
 
 body
-    background-color whitish
+    background-color white
     color            blackish
+    
+article.main
+  width 1024px
+  margin 0 auto
+  background-color whitish
+  padding 24px
+  
+.background-editor-container
+  margin 12px
+  background-color white
+  
+.ql-bar
+  border-bottom 1px solid grey
 
 .js-part-container
   &.mode-edit
