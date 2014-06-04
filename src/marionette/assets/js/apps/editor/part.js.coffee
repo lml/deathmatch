@@ -7,11 +7,16 @@ class PartEditor extends Marionette.ItemView
   triggers:
     'click @ui.prompter': 'content:edit'
     'click @ui.editButton': 'content:edit'
+    'click @ui.saveButton': 'content:save'
+    'click @ui.cancelButton': 'content:cancel'
 
   ui:
     container: '.js-part-container'
     prompter: '.js-background-prompter'
+    viewer: '.js-background-viewer'
     editButton: '.js-content-edit-button'
+    saveButton: '.js-content-save-button'
+    cancelButton: '.js-content-cancel-button'
 
   behaviors:
     ContentEditable:
@@ -21,7 +26,8 @@ class PartEditor extends Marionette.ItemView
       editor:
         selector: '#background-editor'
         toolbar: '#background-editor-toolbar'
+        footer: '#background-editor-footer'
       loadContent: () -> @textContent
-      saveContent: (content) -> @textContent = content
+      saveChanges: (content) -> @textContent = content
 
 module.exports = PartEditor

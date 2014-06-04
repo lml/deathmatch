@@ -55,6 +55,9 @@ class ContentEditable extends Marionette.Behavior
       @_editor.addModule 'toolbar',
         container:
           @options.editor.toolbar
+      @_editor.addModule 'toolbar',
+        container:
+          @options.editor.footer
     @_editor
 
   prompter: () ->
@@ -73,6 +76,12 @@ class ContentEditable extends Marionette.Behavior
   onContentView: () ->
     @cancelEditing()
 
+  onContentCancel: () ->
+    @cancelEditing()
+
+  onContentSave: () ->
+    @saveAndClose()
+
   onShow: () ->
     if @mode() is 'edit'
       @editContent()
@@ -85,7 +94,7 @@ class ContentEditable extends Marionette.Behavior
   cancelEditing: () ->
     # TODO: Ask for confirmation?
     if @mode() is 'edit'
-      html = @options.loadContent
+      html = @options.loadContent()
       @editor().setHTML html
       @viewOrPrompt html
 
@@ -101,6 +110,7 @@ class ContentEditable extends Marionette.Behavior
       .fail (message) -> @showError(message)
 
   saveAndClose: () ->
-    @save () -> @cancelEditing()
+    self = this
+    @save () -> self.viewOrPrompt()
 
 module.exports = ContentEditable

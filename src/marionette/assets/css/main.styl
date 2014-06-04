@@ -1,6 +1,8 @@
 whitish = #ededed
 blackish = #444
 grey = #ccc
+bluish = #4488cc
+lightbluish = #2266ff
 
 global-reset()
 
@@ -23,41 +25,65 @@ article.main
   
 .ql-bar
   border-bottom 1px solid grey
+  
+.ql-footer
+  border-top 1px solid grey
+  padding 8px
+  text-align right
+  
+.hoverable
+  position relative
+  .on-hover
+    position absolute
+    display none
+  &:hover
+    .on-hover
+      display inline-block
 
-.js-part-container
+button.action
+  background transparent
+  cursor pointer
+  padding 8px 12px
+  border 0
+  color bluish
+  &:hover
+    color lightbluish
+ 
+button.secondary
+  &:hover
+    text-decoration underline
+  
+button.primary
+  border 1px solid grey
+  background-color whitish
+
+.part-container
   &.mode-edit
-    .js-background-editor
+    .background-editor-container
       display block
-    .js-background-viewer-container
+    .background-viewer-container
       display none
-    .js-background-prompter
+    .background-prompter
       display none
   &.mode-view
-    .js-background-editor
+    .background-editor-container
       display none
-    .js-background-viewer-container
+    .background-viewer-container
       display block
-    .js-background-prompter
+    .background-prompter
       display none
   &.mode-prompt
-    .js-background-editor
+    .background-editor-container
       display none
-    .js-background-viewer-container
+    .background-viewer-container
       display none
-    .js-background-prompter
+    .background-prompter
       display block
       
-.js-background-viewer-container
-   position relative
-  .js-button-edit-content
-    display none
-    position absolute
+.background-viewer-container
+  .action
     top 12px
     right 12px
-    background-color #ccc
-  &:hover
-    .js-button-edit-content
-      display block
     
-.js-background-prompter
+.background-prompter
   cursor pointer
