@@ -1,5 +1,6 @@
 Backbone = require 'backbone'
 require 'backbone_associations'
+Questions = require './questions.js.coffee'
 MultipleChoiceQuestion = require './multiple_choice_question.js.coffee'
 
 class Part extends Backbone.AssociatedModel
@@ -12,6 +13,7 @@ class Part extends Backbone.AssociatedModel
     {
       type: Backbone.Many,
       key: 'questions',
+      collectionType: Questions,
       relatedModel: (relation, attributes) ->
         return (attrs, options) ->
           if attrs.type == 'multiple_choice_question'

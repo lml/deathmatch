@@ -8,35 +8,23 @@ deathMatch.stub = function() {
     var self = this;
 
     self.exercise = {
-        parts: [{
-            background: "",
-            questions: [{
-                questionStem: "",
-                questionType: "",
-                questionContent: {
-                    simpleChoices: [{
-                        choiceContent: ""
-                    }],
-                    comboChoices: [{
-                        simpleChoiceIds: []
-                    }]
-                }
-            }]
-        }]
+        parts: []
     };
 
     self.update = function(exerciseId, data) {
         self.exercise.background = data.background;
-        return data;
+        return self.exercise;
     };
 
     self.addPart = function(exerciseId, data) {
-        data.id = self.exercise.parts.length - 1;
+        data.id = self.exercise.parts.length;
+        data.position = data.id;
+        data.questions = [];
         self.exercise.parts.push(data);
         return data;
     };
 
-    self.updatePart = function(partId, data) {
+    self.updatePart = function(exerciseId, partId, data) {
         var updated = _.extend(self.exercise.parts[partId], data);
         self.exercise.parts[partId] = updated;
         return updated;
@@ -49,36 +37,66 @@ deathMatch.stub = function() {
         };
     };
 
-    self.addQuestion = function(exerciseId, partId, questionStem) {
-        self.parts[partId].questions.push({
-            questionStem: questionStem,
-            questionType: "multipleChoice",
-            questionContent: {
-                choices: []
-            }
-        });
+    self.addQuestion = function(exerciseId, partId, data) {
+        var questions = self.exercise.parts[partId].questions;
+        data.id = questions.length;
+        data.position = data.id;
+        data.simple_choices = [];
+        data.combo_choices = [];
+        questions.push(data);
+        return data;
     };
 
-    self.updateQuestion = function(partId, questionId, questionStem) {
-        self.exercise.parts[partId].questions[questionId].questionStem = questionStem;
+    self.updateQuestion = function(exerciseId, partId, questionId, data) {
+        var question = self.exercise.parts[partId].questions[questionId];
+        question.stem = data.stem;
+        return question;
     };
 
     self.removeQuestion = function(exerciseId, partId, questionId) {
         self.exercise.parts[partId].questions.splice(questionId, 1);
+        return {
+            success: true
+        };
     };
 
-    self.addSimpleChoice = function(exerciseId, partId, questionId, choiceContent) {
-        self.parts[partId].questions[questionId].choices.push({
-            choiceContent: choiceContent
-        });
+    self.addSimpleChoice = function(exerciseId, partId, questionId, data) {
+        data.id = self.exercise.parts[partId].questions[questionId].simple_choices.length;
+        data.position = data.id;
+        self.exercise.parts[partId].questions[questionId].simple_choices.push(data);
+        return data;
     };
 
-    self.updateSimpleChoice = function(partId, questionId, choiceId, choiceContent) {
-        self.exercise.parts[partId].questions[questionId].choices[choiceId].choiceContent = choiceContent;
+    self.updateSimpleChoice = function(exerciseId, partId, questionId, choiceId, data) {
+        var simple = self.exercise.parts[partId].questions[questionId].simple_choices[choiceId];
+        simple.content = data.content;
+        return simple;
     };
 
     self.removeSimpleChoice = function(exerciseId, partId, questionId, choiceId) {
-        self.exercise[partId].questions[questionId].choices.splice(choiceId, 1);
+        self.exercise[partId].questions[questionId].simple_choices.splice(choiceId, 1);
+        return {
+            succes: true
+        };
+    };
+
+    self.addComboChoice = function(exerciseId, partId, questionId, data) {
+        data.id = self.exercise.parts[partId].questions[questionId].combo_choices.length;
+        self.exercise.parts[partId].questions[questionId].combo_choices.push(data);
+        return data;
+    };
+
+    self.updateComboChoice = function(exerciseId, partId, questionId, choiceId, data) {
+        var combo = self.exercise.parts[partId].questions[questionId].combo_choices[choiceId];
+        combo.combo_simple_choices = data.combo_simple_choices;
+        return combo;
+    };
+
+    self.removeComboChoice = function(exerciseId, partId, questionId, choiceId) {
+        self.exercise[partId].questions[questionId].combo_choices.splice(choiceId, 1);
+        return {
+            success: true
+        };
     };
 
     return {

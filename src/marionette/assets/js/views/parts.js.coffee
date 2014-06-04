@@ -1,6 +1,5 @@
 Marionette = require 'marionette'
 PartView = require './part.js.coffee'
-PartModel = require '../entities/part.js.coffee'
 
 class Parts extends Marionette.CollectionView
 
@@ -8,7 +7,7 @@ class Parts extends Marionette.CollectionView
   childView: PartView
 
   onPartAdd: () ->
-    @collection.create {position: @collection.length}, wait: true
+    @collection.create {}, wait: true
 
   onAddChild: (child) ->
     child.triggerMethod 'show'

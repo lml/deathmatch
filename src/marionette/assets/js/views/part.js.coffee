@@ -1,4 +1,5 @@
 Marionette = require 'marionette'
+QuestionsView = require './questions.js.coffee'
 ContentEditable = require '../behaviors/content_editable.js.coffee'
 
 class Part extends Marionette.LayoutView
@@ -14,6 +15,9 @@ class Part extends Marionette.LayoutView
     content: '.js-part-background-container'
     questions: '.js-part-questions-container'
 
+  triggers:
+    'click .js-add-question-button': 'question:add'
+
   behaviors: () ->
     self = this
     ContentEditable:
@@ -26,5 +30,13 @@ class Part extends Marionette.LayoutView
       saveChanges: (content) ->
         self.model.background = content
         self.model.save()
+
+  onShow: () ->
+    @questionsView = new QuestionsView
+      collection: @model.get('questions')
+    @questions.show @questionsView
+
+  onQuestionAdd: () ->
+    @questionsView?.triggerMethod 'question:add'
 
 module.exports = Part
