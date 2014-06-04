@@ -1,7 +1,10 @@
-require './_namespace.js.coffee'
-require './question.js.coffee'
+Backbone = require 'backbone'
+require 'backbone_associations'
+Question = require './question.js.coffee'
+ComboChoices = require './combo_choices.js.coffee'
+SimpleChoices = require './simple_choices.js.coffee'
 
-class ExerciseEditor.MultipleChoiceQuestion extends ExerciseEditor.Question
+class MultipleChoiceQuestion extends Question
 
   defaults:
     type: 'multiple_choice_question'
@@ -10,12 +13,12 @@ class ExerciseEditor.MultipleChoiceQuestion extends ExerciseEditor.Question
     {
       type: Backbone.Many,
       key: 'simple_choices',
-      collectionType: 'ExerciseEditor.SimpleChoices'
+      collectionType: SimpleChoices
     },
     {
       type: Backbone.Many,
       key: 'combo_choices',
-      collectionType: 'ExerciseEditor.ComboChoices'
+      collectionType: ComboChoices
     }
   ]
 
@@ -28,3 +31,5 @@ class ExerciseEditor.MultipleChoiceQuestion extends ExerciseEditor.Question
       @get('combo_choices').sort()
 
     super
+
+module.exports = MultipleChoiceQuestion

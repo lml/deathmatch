@@ -1,5 +1,7 @@
-require './_namespace.js.coffee'
-class ExerciseEditor.AssociatedCollection extends Backbone.Collection
+Backbone = require 'backbone'
+require 'backbone_associations'
+
+class AssociatedCollection extends Backbone.Collection
   owner: () ->
     if @parents? and @parents[0]? then return @parents[0]
 
@@ -9,3 +11,5 @@ class ExerciseEditor.AssociatedCollection extends Backbone.Collection
   url: () ->
     owner = @owner()
     if owner then return "#{@owner.url()}/#{@resourceName()}"
+
+module.exports = AssociatedCollection

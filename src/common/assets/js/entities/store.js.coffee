@@ -1,4 +1,5 @@
-require './_namespace.js.coffee'
+Backbone = require 'backbone'
+require 'backbone_associations'
 Store = {}
 
 theStore = {}
@@ -47,4 +48,4 @@ processPendingModelActions = (className, id) ->
 Store.getTheStore = () -> theStore
 
 
-module.exports = ExerciseEditor.Store = Store
+module.exports = Store

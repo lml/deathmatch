@@ -1,7 +1,8 @@
-require './_namespace.js.coffee'
-require './multiple_choice_question.js.coffee'
+Backbone = require 'backbone'
+require 'backbone_associations'
+MultipleChoiceQuestion = require './multiple_choice_question.js.coffee'
 
-class ExerciseEditor.Part extends Backbone.AssociatedModel
+class Part extends Backbone.AssociatedModel
 
   defaults:
     position: -1,
@@ -13,8 +14,11 @@ class ExerciseEditor.Part extends Backbone.AssociatedModel
       key: 'questions',
       relatedModel: (relation, attributes) ->
         return (attrs, options) ->
-          if attrs.type == 'multiple_choice_question' then
-            return new ExerciseEditor.MultipleChoiceQuestion(attrs)
+          if attrs.type == 'multiple_choice_question'
+            return new MultipleChoiceQuestion(attrs)
           throw "unknown question type"
     }
   ]
+
+
+module.exports = Part

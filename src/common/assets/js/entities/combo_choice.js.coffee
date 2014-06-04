@@ -1,12 +1,13 @@
-require './_namespace.js.coffee'
-require './combo_simple_choice.js.coffee'
+Backbone = require 'backbone'
+require 'backbone_associations'
+ComboSimpleChoice = require './combo_simple_choice.js.coffee'
 
-class ExerciseEditor.ComboChoice extends Backbone.AssociatedModel
+class ComboChoice extends Backbone.AssociatedModel
   relations: [
     {
       type: Backbone.Many,
       key: 'combo_simple_choices',
-      relatedModel: 'ExerciseEditor.ComboSimpleChoice',
+      relatedModel: ComboSimpleChoice,
     }
   ]
 
@@ -24,3 +25,5 @@ class ExerciseEditor.ComboChoice extends Backbone.AssociatedModel
     @get('combo_simple_choices').map((csc) ->
       simples.get(csc.get('simple_choice_id'))).sortBy((sc) ->
         sc.get('position'))
+
+module.exports = ComboChoice

@@ -1,9 +1,8 @@
-require './_namespace.js.coffee'
-require './associated_collection.js.coffee'
-require './combo_choice.js.coffee'
+AssociatedCollection = require './associated_collection.js.coffee'
+ComboChoice = require './combo_choice.js.coffee'
 
-class ExerciseEditor.ComboChoices extends ExerciseEditor.AssociatedCollection
-  model: ExerciseEditor.ComboChoice
+class ComboChoices extends AssociatedCollection
+  model: ComboChoice
 
   comparator: (left, right) ->
     # When collection created, parent might not be set so don't sort
@@ -29,3 +28,5 @@ class ExerciseEditor.ComboChoices extends ExerciseEditor.AssociatedCollection
       if res then res[0].compare(res[1]) else 0
     else
       if numLeft < numRight then -1 else 1
+
+module.exports = ComboChoices

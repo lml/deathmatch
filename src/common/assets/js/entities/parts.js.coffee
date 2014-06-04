@@ -1,6 +1,8 @@
-require './_namespace.js.coffee'
-require './associated_collection.js.coffee'
-require './part.js.coffee'
+AssociatedCollection = require './associated_collection.js.coffee'
+Part = require './part.js.coffee'
 
-class ExerciseEditor.Parts extends ExerciseEditor.AssociatedCollection
-  model: ExerciseEditor.Part
+class Parts extends AssociatedCollection
+  model: Part
+
+
+module.exports = Parts

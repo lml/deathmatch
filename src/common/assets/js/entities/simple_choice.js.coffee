@@ -1,10 +1,11 @@
-require './_namespace.js.coffee'
-require './store.js.coffee'
+Backbone = require 'backbone'
+require 'backbone_associations'
+Store = require './store.js.coffee'
 
-class ExerciseEditor.SimpleChoice extends Backbone.AssociatedModel
+class SimpleChoice extends Backbone.AssociatedModel
 
   initialize: (attributes, options) ->
-    ExerciseEditor.Store.addModel(this)
+    Store.addModel(this)
     @listenTo this, 'change:position', () -> @trigger('change:letter')
 
   question: () ->
@@ -18,3 +19,5 @@ class ExerciseEditor.SimpleChoice extends Backbone.AssociatedModel
     opos = other.get('position')
     return 0 if pos == opos
     if pos > opos then -1 else 1
+
+module.exports = SimpleChoice
