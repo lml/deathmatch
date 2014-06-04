@@ -1,14 +1,10 @@
 Marionette = require 'marionette'
 _ = require 'underscore'
 $ = require 'jquery'
-Quill = require 'quilljs'
+
+ContentView = require '../views/content.js.coffee'
 
 class ContentEditable extends Marionette.Behavior
-
-  defaults:
-    tips:
-      add: "Click to add new content."
-      edit: "Click to edit content"
 
   #
   # Editor modes
@@ -27,45 +23,23 @@ class ContentEditable extends Marionette.Behavior
       else
         'prompt'
 
-  setMode: (mode) ->
+  setMode: (content, mode) ->
     @container()
       .removeClass(_.without(@modes, @modes[mode]).join(' '))
       .addClass(@modes[mode])
+    @contentView?.triggerMethod('mode:changed', content, mode)
 
   viewOrPrompt: (content) ->
     if not content?
       content = @options.loadContent() ? ""
-    if content is ""
-      @prompter().html(@options.tips.add)
-      @setMode 'prompt'
-    else
-      @prompter().html(@options.tips.edit)
-      @viewer().html(content)
-      @setMode 'view'
+    mode = if content is "" then 'prompt' else 'view'
+    @setMode content, mode
 
   #
   # Element accessors
   #
   container: () ->
-    @view.ui.container
-
-  editor: () ->
-    if not @_editor?
-      @_editor = new Quill @options.editor.selector, theme: 'snow'
-      @_editor.addModule 'toolbar',
-        container:
-          @options.editor.toolbar
-      @_editor.addModule 'toolbar',
-        container:
-          @options.editor.footer
-    @_editor
-
-  prompter: () ->
-    @view.ui.prompter
-
-  viewer: () ->
-    @view.ui.viewer
-
+    @options.contentRegion.$el
 
   #
   # View event handlers
@@ -83,6 +57,13 @@ class ContentEditable extends Marionette.Behavior
     @saveAndClose()
 
   onShow: () ->
+    @contentView = new ContentView
+      prompts: @options.prompts
+    @listenTo @contentView, 'content:save', @saveAndClose
+    @listenTo @contentView, 'content:cancel', @cancelEditing
+    @listenTo @contentView, 'content:edit', @editContent
+
+    @options.contentRegion.show @contentView
     if @mode() is 'edit'
       @editContent()
     else
@@ -94,18 +75,15 @@ class ContentEditable extends Marionette.Behavior
   cancelEditing: () ->
     # TODO: Ask for confirmation?
     if @mode() is 'edit'
-      html = @options.loadContent()
-      @editor().setHTML html
-      @viewOrPrompt html
+      @viewOrPrompt()
 
 
   editContent: () ->
-    @editor().setHTML @options.loadContent()
-    @editor().focus()
-    @setMode 'edit'
+    html = @options.loadContent()
+    @setMode html, 'edit'
 
   save: (cb=null) ->
-    $.when(@options.saveChanges @editor().getHTML())
+    $.when(@options.saveChanges @contentView?.editorContent())
       .done () -> cb?()
       .fail (message) -> @showError(message)
 

@@ -1,22 +1,16 @@
-require './entities/combo_choices.js.coffee'
-require './entities/question.js.coffee'
-require './entities/exercise.js.coffee'
-
-PartsView = require './apps/editor/part.js.coffee'
-ContentEditable = require './apps/editor/content_editable.js.coffee'
-
 Marionette = require 'marionette'
-Marionette.Behaviors.behaviorsLookup = () -> ExerciseEditor.Behaviors
+ExerciseModel = require './entities/exercise.js.coffee'
+ExerciseView = require './views/exercise.js.coffee'
 
-ExerciseEditor= new Marionette.Application
-ExerciseEditor.Behaviors = {}
-ExerciseEditor.Behaviors.ContentEditable = ContentEditable
+ExerciseEditor = new Marionette.Application
 
 ExerciseEditor.addRegions
-  exerciseRegion: "#exercise-content"
+  exerciseRegion: "#exercise-editor"
 
 ExerciseEditor.on "start", () ->
-  partsView = new PartsView()
-  ExerciseEditor.exerciseRegion.show(partsView)
+  exercise = new ExerciseModel
+  exerciseView = new ExerciseView
+    model: exercise
+  ExerciseEditor.exerciseRegion.show exerciseView
 
 ExerciseEditor.start()

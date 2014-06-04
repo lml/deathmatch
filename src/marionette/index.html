@@ -8,53 +8,85 @@
   </head>
   <body>
     <article class="main">
-      <section id="exercise-content" class="exercise">
+      <section id="exercise-editor" class="exercise">
       </section>
     </article>
+    <script type="text/template" id="content-template">
+      <div class="js-editor-container editor-container"></div>
+      <div class="js-viewer-container viewer-container hoverable"></div>
+      <div class="js-prompter-container prompter-container"></div>
+    </script>
+    <script type="text/template" id="editor-template">
+      <div class="ql-box">
+        <div class="ql-toolbar">
+          <span class="ql-format-group">
+            <span title="Bold" class="ql-format-button ql-bold"></span>
+            <span class="ql-format-separator"></span>
+            <span title="Italic" class="ql-format-button ql-italic"></span>
+            <span class="ql-format-separator"></span>
+            <span title="Underline" class="ql-format-button ql-underline"></span>
+            <span class="ql-format-separator"></span>
+            <span title="Strikethrough" class="ql-format-button ql-strike"></span>
+          </span>
+          <span class="ql-format-group">
+            <span title="List" class="ql-format-button ql-list"></span>
+            <span class="ql-format-separator"></span>
+            <span title="Bullet" class="ql-format-button ql-bullet"></span>
+            <span class="ql-format-separator"></span>
+            <select title="Text Alignment" class="ql-align">
+              <option value="left" label="Left" selected=""></option>
+              <option value="center" label="Center"></option>
+              <option value="right" label="Right"></option>
+              <option value="justify" label="Justify"></option>
+            </select>
+          </span>
+          <span class="ql-format-group">
+            <span title="Link" class="ql-format-button ql-link"></span>
+          </span>
+        </div>
+        <div class="ql-editor"></div>
+        <div class="ql-footer">
+          <button class="js-editor-cancel-button action secondary">Cancel</button>
+          <button class="js-editor-save-button action primary">Save</button>
+        </div>
+      </div>
+    </script>
+    <script type="text/template" id="viewer-template">
+      <button class="js-content-edit-button action secondary on-hover">Edit</button>
+      <div class="js-viewer viewer"></div>
+    </script>
+    <script type="text/template" id="prompter-template">
+      <span class="js-prompt-add-tip prompt-add-tip"><%= prompts.add %></span>
+      <span class="js-prompt-edit-tip prompt-edit-tip"><%= prompts.edit %></span>
+    </script>
+    <script type="text/template" id="exercise-template">
+      <div class="js-exercise-background-container content-container"></div>
+      <div class="js-exercise-parts-container"></div>
+      <div class="js-exercise-actions-container action-panel drawer">
+       <button class="js-add-part-button action secondary">Add part</button>
+      </div>
+    </script>
     <script type="text/template" id="part-template">
-      <div class="js-part-container part-container">
-        <div class="js-background-editor background-editor-container">
-          <div class="ql-box">
-            <div id="background-editor-toolbar" class="ql-bar">
-              <span class="ql-format-group">
-                <span title="Bold" class="ql-format-button ql-bold"></span>
-                <span class="ql-format-separator"></span>
-                <span title="Italic" class="ql-format-button ql-italic"></span>
-                <span class="ql-format-separator"></span>
-                <span title="Underline" class="ql-format-button ql-underline"></span>
-                <span class="ql-format-separator"></span>
-                <span title="Strikethrough" class="ql-format-button ql-strike"></span>
-              </span>
-              <span class="ql-format-group">
-                <span title="List" class="ql-format-button ql-list"></span>
-                <span class="ql-format-separator"></span>
-                <span title="Bullet" class="ql-format-button ql-bullet"></span>
-                <span class="ql-format-separator"></span>
-                <select title="Text Alignment" class="ql-align">
-                  <option value="left" label="Left" selected=""></option>
-                  <option value="center" label="Center"></option>
-                  <option value="right" label="Right"></option>
-                  <option value="justify" label="Justify"></option>
-                </select>
-              </span>
-              <span class="ql-format-group">
-                <span title="Link" class="ql-format-button ql-link"></span>
-              </span>
-            </div>
-            <div id="background-editor" class="ql-editor"></div>
-            <div id="background-editor-footer" class="ql-footer">
-              <button class="js-content-cancel-button action secondary">Cancel</button>
-              <button class="js-content-save-button action primary">Save</button>
-            </div>
-          </div>
-        </div>
-        <div class="js-background-viewer-container background-viewer-container hoverable">
-          <button class="js-content-edit-button action secondary on-hover">Edit</button>
-          <div class="js-background-viewer background-viewer">
-          </div>
-        </div>
-        <div class="js-background-prompter background-prompter">
-        </div>
+      <div class="js-part-background-container content-container"></div>
+      <div class="js-part-actions-container action-panel drawer">
+       <button class="js-delete-part-button action secondary">Delete part</button>
+       <button class="js-add-question-button action secondary">Add question</button>
+      </div>
+    </script>
+    <script type="text/template" id="question-template">
+      <div class="js-question-stem-container"></div>
+      <div class="js-question-actions-container action-panel drawer">
+       <button class="js-add-choice-button action secondary">Add choice</button>
+       <button class="js-add-combo-choice-button action secondary">Add &quot;(a) &amp; (b)&quot; choice</button>
+       <button class="js-add-combo-choice-button action secondary">Add &quot;All of the above&quot; choice</button>
+       <button class="js-add-combo-choice-button action secondary">Add &quot;None of the above&quot; choice</button>
+       <button class="js-delete-question-button action secondary">Delete question</button>
+      </div>
+    </script>
+    <script type="text/template" id="choice-template">
+      <div class="js-choice-content-container"></div>
+      <div class="js-choice-actions-container action-panel drawer">
+       <button class="js-delete-choice-button action secondary">Delete choice</button>
       </div>
     </script>
     <script src="./assets/js/app.js"></script>

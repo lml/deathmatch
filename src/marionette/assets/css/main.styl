@@ -1,4 +1,6 @@
 whitish = #ededed
+wheatish = #f2f0d3
+beige = #f5f5dc
 blackish = #444
 grey = #ccc
 bluish = #4488cc
@@ -6,24 +8,22 @@ lightbluish = #2266ff
 
 global-reset()
 
-li
-  list-style-type none
-
 body
-    background-color white
+    background-color whitish
     color            blackish
     
 article.main
   width 1024px
   margin 0 auto
-  background-color whitish
+  background-color white
   padding 24px
   
-.background-editor-container
+.ql-box
   margin 12px
   background-color white
+  border 1px solid grey
   
-.ql-bar
+.ql-toolbar
   border-bottom 1px solid grey
   
 .ql-footer
@@ -39,6 +39,25 @@ article.main
   &:hover
     .on-hover
       display inline-block
+      
+.has-drawer
+  position relative
+  
+  .drawer
+    position absolute
+    left 100%
+    top  0px
+    display inline-block
+    width 120px
+    margin-left 24px
+    
+.action-panel
+  padding 4px
+  background-color white
+  border-radius right 8px
+  .action
+    padding 2px 8px
+    margin 4px 8px
 
 button.action
   background transparent
@@ -57,33 +76,45 @@ button.primary
   border 1px solid grey
   background-color whitish
 
-.part-container
+.content-container
+  min-height 200px
   &.mode-edit
-    .background-editor-container
+    .editor-container
       display block
-    .background-viewer-container
+    .viewer-container
       display none
-    .background-prompter
+    .prompter-container
       display none
   &.mode-view
-    .background-editor-container
+    .editor-container
       display none
-    .background-viewer-container
+    .viewer-container
       display block
-    .background-prompter
+    .prompter-container
       display none
   &.mode-prompt
-    .background-editor-container
+    .editor-container
       display none
-    .background-viewer-container
+    .viewer-container
       display none
-    .background-prompter
+    .prompter-container
       display block
       
-.background-viewer-container
+.prompter-container
+  border 1px solid grey
+  padding 24px
+  background-color beige
+      
+.viewer-container
+  cursor pointer
+  border 1px dotted transparent
+  border-radius 4px
+  padding 12px
   .action
-    top 12px
-    right 12px
+    top 0px
+    right 0px
+  &:hover
+    border-color grey
     
-.background-prompter
+.prompter-container
   cursor pointer

@@ -7,14 +7,14 @@ class Exercise extends Backbone.AssociatedModel
 
   relations: [
     {
-      type: Backbone.Many,
-      key: 'parts',
+      type: Backbone.Many
+      key: 'parts'
       relatedModel: Part
-      collectionType: Parts,
+      collectionType: Parts
     }
   ]
 
   defaults:
     number: ''
 
-module.Exports = Exercise
+module.exports = Exercise
