@@ -1,23 +1,30 @@
 Marionette = require 'marionette'
+ContentEditable = require '../behaviors/content_editable.js.coffee'
 
-class Part extends Marionette.ItemView
+class Part extends Marionette.LayoutView
+
+  id: () ->
+    "part-#{@model.get('position')}-container"
 
   tagName: 'li'
-
+  className: 'has-drawer'
   template: '#part-template'
 
-  behaviors:
+  regions:
+    content: '.js-part-background-container'
+    questions: '.js-part-questions-container'
+
+  behaviors: () ->
+    self = this
     ContentEditable:
-      tips:
+      behaviorClass: ContentEditable
+      prompts:
         add: 'Click here to add background information for this part.'
         edit: 'Click to edit background information for this part.'
-      editor:
-        selector: '#background-editor'
-        toolbar: '#background-editor-toolbar'
-        footer: '#background-editor-footer'
-      loadContent: () -> @model.background
+      contentRegion: self.content
+      loadContent: () -> self.model.background
       saveChanges: (content) ->
-        @model.background = content
-        @model.save
+        self.model.background = content
+        self.model.save()
 
 module.exports = Part

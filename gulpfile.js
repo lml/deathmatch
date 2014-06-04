@@ -71,13 +71,6 @@ function marionetteLib(config) {
 
 function marionetteApp(config) {
     var xify = config.live ? watchify : browserify;
-    var shims = globalShim.configure({
-        'jQuery': '$',
-        'underscore': '_',
-        'backbone': 'Backbone',
-        'backbone-associations': 'Backbone.AssociatedModel',
-        'marionette': 'Marionette'
-    });
     var bundler = xify({
         entries: ['./' + folders.src + '/marionette/assets/js/app.js.coffee'],
         extensions: ['.js', '.coffee']

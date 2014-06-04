@@ -3,6 +3,7 @@ wheatish = #f2f0d3
 beige = #f5f5dc
 blackish = #444
 grey = #ccc
+textgrey = #999
 bluish = #4488cc
 lightbluish = #2266ff
 
@@ -58,6 +59,10 @@ article.main
   .action
     padding 2px 8px
     margin 4px 8px
+  h4
+    font-size 12px
+    color textgrey
+    padding 4px 16px
 
 button.action
   background transparent
@@ -104,7 +109,16 @@ button.primary
   border 1px solid grey
   padding 24px
   background-color beige
-      
+  .prompt-add-tip
+    display none
+  .prompt-edit-tip
+    display inline
+  .empty-content
+    .prompt-add-tip
+      display inline
+    .prompt-edit-tip
+      display none
+
 .viewer-container
   cursor pointer
   border 1px dotted transparent

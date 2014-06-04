@@ -10,6 +10,6 @@ class AssociatedCollection extends Backbone.Collection
 
   url: () ->
     owner = @owner()
-    if owner then return "#{@owner.url()}/#{@resourceName()}"
+    if owner then return "#{owner.url()}/#{@resourceName()}"
 
 module.exports = AssociatedCollection

@@ -5,6 +5,8 @@ Parts = require './parts.js.coffee'
 
 class Exercise extends Backbone.AssociatedModel
 
+  urlRoot: '/api/exercises'
+
   relations: [
     {
       type: Backbone.Many

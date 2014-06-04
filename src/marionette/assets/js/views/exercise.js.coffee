@@ -1,5 +1,5 @@
 Marionette = require 'marionette'
-#PartsView = require './parts.js.coffee'
+PartsView = require './parts.js.coffee'
 ContentEditable = require '../behaviors/content_editable.js.coffee'
 
 class Exercise extends Marionette.LayoutView
@@ -12,6 +12,9 @@ class Exercise extends Marionette.LayoutView
     content: '.js-exercise-background-container'
     parts: '.js-exercise-parts-container'
 
+  triggers:
+    'click .js-add-part-button': 'part:add'
+
   behaviors: () ->
     self = this
     ContentEditable:
@@ -23,10 +26,14 @@ class Exercise extends Marionette.LayoutView
       loadContent: () -> self.model.background
       saveChanges: (content) ->
         self.model.background = content
-        self.model.save
+        self.model.save()
 
-  # onShow: () ->
-  #   @parts.show new PartsView
-  #     collection: @model.get('parts')
+  onShow: () ->
+    @partsView = new PartsView
+      collection: @model.get('parts')
+    @parts.show @partsView
+
+  onPartAdd: () ->
+    @partsView?.triggerMethod 'part:add'
 
 module.exports = Exercise

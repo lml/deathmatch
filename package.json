@@ -16,6 +16,7 @@
     "underscore": "_",
     "backbone": "Backbone",
     "backbone.babysitter": "Backbone.Babysitter",
+    "backbone-faux-server": "fauxServer",
     "backbone.wreqr": "global:Backbone.Wreqr",
     "marionette": "Marionette",
     "backbone_associations": "Backbone.AssociatedModel",

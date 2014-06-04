@@ -22,11 +22,9 @@
     "underscore": "1.6.*",
     "marionette": "2.*",
     "backbone-associations": "0.*",
+    "backbone-faux-server": "0.*",
     "react": "0.*",
     "jquery": "2.*"
-  },
-  "devDependencies": {
-    "backbone-faux-server": "0.*"
   },
   "resolutions": {
     "backbone": "1.1.*",
