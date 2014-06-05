@@ -8,7 +8,7 @@ class Part extends Marionette.LayoutView
     "part-#{@model.get('position')}-container"
 
   tagName: 'li'
-  className: 'has-drawer'
+  className: 'part-container has-drawer'
   template: '#part-template'
 
   regions:

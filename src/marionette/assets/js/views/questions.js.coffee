@@ -1,6 +1,5 @@
 Marionette = require 'marionette'
 QuestionView = require './question.js.coffee'
-QuestionModel = require '../entities/question.js.coffee'
 
 class Questions extends Marionette.CollectionView
 

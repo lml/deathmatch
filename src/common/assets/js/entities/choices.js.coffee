@@ -1,9 +1,10 @@
 Backbone = require 'backbone'
 AssociatedCollection = require './associated_collection.js.coffee'
-SimpleChoice = require './simple_choice.js.coffee'
+Choice = require './choice.js.coffee'
+$ = require 'jquery'
 
-class SimpleChoices extends AssociatedCollection
-  model: SimpleChoice
+class Choices extends AssociatedCollection
+  model: Choice
 
   positionField: 'position'
 
@@ -11,8 +12,8 @@ class SimpleChoices extends AssociatedCollection
     # When a model is removed, this will update the remaining positions w/o a sync
     @listenTo this, 'remove', @setPositionsFromIndex
 
-  comparator: (choice) ->
-    choice.get(@positionField)
+  comparator: (left, right) ->
+    left.compare(right)
 
   savePositions: (options={}) ->
     if @models.length == 0 then return
@@ -43,4 +44,4 @@ class SimpleChoices extends AssociatedCollection
         alert 'sort order could not be saved, please reload this page'
 
 
-module.exports = SimpleChoices
+module.exports = Choices

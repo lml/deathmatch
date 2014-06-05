@@ -7,7 +7,17 @@ var deathMatch = deathMatch || {};
 deathMatch.stub = function() {
     var self = this;
 
+    function updateAttributes(from, to, atts) {
+        _.each(atts, function(att) {
+            var res = _.result(from, att);
+            if (res) {
+                to[att] = res;
+            }
+        });
+    };
+
     self.exercise = {
+        background: "",
         parts: []
     };
 
@@ -18,6 +28,7 @@ deathMatch.stub = function() {
 
     self.addPart = function(exerciseId, data) {
         data.id = self.exercise.parts.length;
+        data.background = "";
         data.position = data.id;
         data.questions = [];
         self.exercise.parts.push(data);
@@ -25,9 +36,9 @@ deathMatch.stub = function() {
     };
 
     self.updatePart = function(exerciseId, partId, data) {
-        var updated = _.extend(self.exercise.parts[partId], data);
-        self.exercise.parts[partId] = updated;
-        return updated;
+        var part = self.exercise.parts[partId];
+        updateAttributes(data, part, ['background', 'questions']);
+        return part;
     };
 
     self.removePart = function(exerciseId, partId) {
@@ -41,15 +52,15 @@ deathMatch.stub = function() {
         var questions = self.exercise.parts[partId].questions;
         data.id = questions.length;
         data.position = data.id;
-        data.simple_choices = [];
-        data.combo_choices = [];
+        data.stem = "";
+        data.choices = [];
         questions.push(data);
         return data;
     };
 
     self.updateQuestion = function(exerciseId, partId, questionId, data) {
         var question = self.exercise.parts[partId].questions[questionId];
-        question.stem = data.stem;
+        updateAttributes(data, question, ['stem', 'choices']);
         return question;
     };
 
@@ -60,42 +71,25 @@ deathMatch.stub = function() {
         };
     };
 
-    self.addSimpleChoice = function(exerciseId, partId, questionId, data) {
-        data.id = self.exercise.parts[partId].questions[questionId].simple_choices.length;
+    self.addChoice = function(exerciseId, partId, questionId, data) {
+        data.id = self.exercise.parts[partId].questions[questionId].choices.length;
         data.position = data.id;
-        self.exercise.parts[partId].questions[questionId].simple_choices.push(data);
+        data.content = "";
+        data.combos = [];
+        self.exercise.parts[partId].questions[questionId].choices.push(data);
         return data;
     };
 
-    self.updateSimpleChoice = function(exerciseId, partId, questionId, choiceId, data) {
-        var simple = self.exercise.parts[partId].questions[questionId].simple_choices[choiceId];
-        simple.content = data.content;
-        return simple;
+    self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
+        var choice = self.exercise.parts[partId].questions[questionId].choices[choiceId];
+        updateAttributes(data, choice, ['position', 'content', 'combos']);
+        return choice;
     };
 
-    self.removeSimpleChoice = function(exerciseId, partId, questionId, choiceId) {
-        self.exercise[partId].questions[questionId].simple_choices.splice(choiceId, 1);
+    self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
+        self.exercise[partId].questions[questionId].choices.splice(choiceId, 1);
         return {
             succes: true
-        };
-    };
-
-    self.addComboChoice = function(exerciseId, partId, questionId, data) {
-        data.id = self.exercise.parts[partId].questions[questionId].combo_choices.length;
-        self.exercise.parts[partId].questions[questionId].combo_choices.push(data);
-        return data;
-    };
-
-    self.updateComboChoice = function(exerciseId, partId, questionId, choiceId, data) {
-        var combo = self.exercise.parts[partId].questions[questionId].combo_choices[choiceId];
-        combo.combo_simple_choices = data.combo_simple_choices;
-        return combo;
-    };
-
-    self.removeComboChoice = function(exerciseId, partId, questionId, choiceId) {
-        self.exercise[partId].questions[questionId].combo_choices.splice(choiceId, 1);
-        return {
-            success: true
         };
     };
 
@@ -109,9 +103,9 @@ deathMatch.stub = function() {
             addQuestion: self.addQuestion,
             updateQuestion: self.updateQuestion,
             removeQuestion: self.removeQuestion,
-            addSimpleChoice: self.addSimpleChoice,
-            updateSimpleChoice: self.updateSimpleChoice,
-            removeSimpleChoice: self.removeSimpleChoice
+            addChoice: self.addChoice,
+            updateChoice: self.updateChoice,
+            removeChoice: self.removeChoice
         }
     };
 };
@@ -147,15 +141,15 @@ fauxServer
         function(context, exerciseId, partId, questionId) {
             return exercise.removeQuestion(exerciseId, partId, questionId);
         })
-    .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/simpleChoices",
+    .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
         function(context, exerciseId, partId, questionId) {
-            return exercise.addQuestion(exerciseId, partId, questionId, context.data);
+            return exercise.addChoice(exerciseId, partId, questionId, context.data);
         })
-    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/simplechoices/choiceId",
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
-            return exercise.updateQuestion(exerciseId, partId, questionId, choiceId, context.data);
+            return exercise.updateChoice(exerciseId, partId, questionId, choiceId, context.data);
         })
-    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/simplechoices/choiceId",
+    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
             return exercise.removeChoice(exerciseId, partId, questionId, choiceId);
         });
