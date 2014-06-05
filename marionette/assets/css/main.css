@@ -273,7 +273,7 @@ ol.letters > li:before {
   border-color: #ccc;
 }
 .part-container {
-  margin: 12px 0;
+  margin: 12px 0 48px;
   min-height: 240px;
 }
 .choice-item {
@@ -281,5 +281,6 @@ ol.letters > li:before {
   line-height: 2em;
 }
 .question-container {
+  margin: 12px 0;
   min-height: 140px;
 }
