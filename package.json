@@ -44,6 +44,7 @@
     "gulp-concat": "",
     "gulp-coffee": "",
     "gulp-plumber": "",
+    "gulp-gh-pages": "",
     "gulp-livereload": "",
     "gulp-notify": "",
     "gulp-jshint": "",
@@ -54,6 +55,7 @@
     "vinyl-source-stream": "",
     "vinyl-transform": "",
     "quilljs": "",
+    "serve-static": "",
     "wiredep": ""
   },
   "browser": {

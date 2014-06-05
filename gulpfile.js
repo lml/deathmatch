@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     gutil = require('gulp-util'),
     connect = require('connect'),
+    static = require('serve-static'),
     livereload = require('gulp-livereload'),
     http = require('http'),
     coffee = require('gulp-coffee'),
@@ -12,6 +13,8 @@ var gulp = require('gulp'),
     notify = require('gulp-notify'),
     jshint = require('gulp-jshint'),
     clean = require('gulp-clean'),
+    plumber = require('gulp-plumber'),
+    ghpush = require('gulp-gh-pages'),
     size = require('gulp-size'),
     streamQueue = require('streamqueue'),
     vsource = require('vinyl-source-stream'),
@@ -111,11 +114,16 @@ function runCSS(config) {
 
 function runStylus(config) {
     gulp.src(sourcePaths.stylus)
+        .pipe(plumber())
         .pipe(stylus({
             errors: config.dev,
             compress: !config.dev,
             use: [nib()],
             import: ['nib']
+        }))
+        .on("error", notify.onError({
+            message: "<%= error.message %>",
+            title: "Stylus Error"
         }))
         .pipe(gulp.dest(folders.dest + '/marionette/assets/css'));
 }
@@ -167,7 +175,8 @@ gulp.task('serve', function() {
     }, function(path) {
         reloader.changed(path);
     });
-    server.use(connect.static(folders.dest)).listen(8081);
+    var app = server.use(static(folders.dest));
+    http.createServer(app).listen(8081);
 });
 
 gulp.task('dev', function() {
@@ -182,4 +191,9 @@ gulp.task('prod', function() {
         live: false,
         dev: false
     });
+});
+
+gulp.task('ghpublish', function() {
+    gulp.src("./www/**/*")
+        .pipe(ghpush());
 });

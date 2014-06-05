@@ -83,6 +83,48 @@ button.primary
   border 1px solid grey
   background-color whitish
 
+ol.numbered
+  list-style-type decimal !ie
+  margin 0
+  margin-left 3em
+  counter-reset li-counter
+  
+  > li
+    border-bottom 1px dotted whitish
+  
+  > li:before
+    position absolute
+    top 0px
+    left -2em
+    width 0.8em
+     
+    font-size 1.5em
+    line-height 1
+    font-weight bold
+    text-align right
+ 
+    content counter(li-counter) ")"
+    counter-increment li-counter
+    
+ol.letters
+  list-style-type lower-alpha !ie
+  margin 0
+  margin-left 2.5em
+  counter-reset li-counter
+    
+  > li:before
+    position absolute
+    top -1px
+    left -2em
+    width 0.8em
+     
+    font-size 1em
+    line-height 2em
+    text-align right
+ 
+    content "(" counter(li-counter, lower-alpha) ")"
+    counter-increment li-counter
+
 .content-container
   margin 24px 0
   &.mode-edit
@@ -139,49 +181,9 @@ button.primary
   margin 12px 0
   min-height 240px
   
-ol.numbered
-  list-style-type decimal !ie
-  margin 0
-  margin-left 3em
-  counter-reset li-counter
-  
-  > li
-    border-bottom 1px dotted whitish
-  
-  > li:before
-    position absolute
-    top 0px
-    left -2em
-    width 0.8em
-     
-    font-size 1.5em
-    line-height 1
-    font-weight bold
-    text-align right
- 
-    content counter(li-counter) ")"
-    counter-increment li-counter
-    
-ol.letters
-  list-style-type lower-alpha !ie
-  margin 0
-  margin-left 2.5em
-  counter-reset li-counter
-    
-  > li:before
-    position absolute
-    top -1px
-    left -2em
-    width 0.8em
-     
-    font-size 1em
-    line-height 2em
-    text-align right
- 
-    content "(" counter(li-counter, lower-alpha) ")"
-    counter-increment li-counter
-
 .choice-item
   max-width 80%
   line-height 2em
 
+.question-container
+  min-height 140px
