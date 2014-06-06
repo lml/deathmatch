@@ -31,7 +31,7 @@ class Choices extends AssociatedCollection
 
   move: (from, to) ->
     if from instanceof Backbone.Model then from = from.get(@positionField)
-    @models.move(from, to)
+    @models.splice(to, 0, @models.splice(from, 1)[0]);
     @setPositionsFromIndex()
     @sort()
     @savePositions

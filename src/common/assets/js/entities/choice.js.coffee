@@ -21,6 +21,16 @@ class Choice extends Backbone.AssociatedModel
   letter: () ->
     String.fromCharCode(97 + @position())
 
+  canMoveUp: () ->
+    @type() is 'simple' and @position() > 0
+
+  canMoveDown: () ->
+    isBottom = () =>
+      @position() is @collection.length - 1
+    isLastSimpleChoice = () =>
+      @collection.at(@position() + 1).type() isnt 'simple'
+    @type() is 'simple' and not (isBottom() or isLastSimpleChoice())
+
   type: () ->
     @get('type')
 
@@ -56,5 +66,15 @@ class Choice extends Backbone.AssociatedModel
       selections = @get('combos').map (csc) ->
         self.collection.get(csc.get 'choice_id')
       _.sortBy selections, (sc) -> sc.position()
+
+  moveUp: () ->
+    if @canMoveUp()
+       idx = @position()
+      @collection.move idx, idx-1
+
+  moveDown: () ->
+    if @canMoveDown()
+       idx = @position()
+      @collection.move idx, idx+1
 
 module.exports = Choice

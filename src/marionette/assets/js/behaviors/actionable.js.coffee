@@ -1,5 +1,6 @@
 Marionette = require 'marionette'
 ActionsView = require '../views/actions.js.coffee'
+_ = require 'underscore'
 
 class Actionable extends Marionette.Behavior
 
@@ -10,7 +11,10 @@ class Actionable extends Marionette.Behavior
   onShow: () ->
     @actionsView = new ActionsView
       model: @view.model
-      helpers: @options.helpers
+      helpers: _.extend({}, @defaults.helpers, @options.helpers)
     @view.actions.show(@actionsView)
+
+  onRefreshActions: () ->
+    @actionsView?.rerender()
 
 module.exports = Actionable

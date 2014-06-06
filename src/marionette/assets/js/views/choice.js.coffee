@@ -17,6 +17,10 @@ class Choice extends Marionette.LayoutView
   className: 'js-choice-container choice-container has-drawer'
   template: "#choice-container-template"
 
+  triggers:
+    'click .js-move-up-choice-button': 'choice:moveup'
+    'click .js-move-down-choice-button': 'choice:movedown'
+
   regions:
     container: '.js-choice-item'
     actions: '.js-choice-actions-container'
@@ -28,6 +32,10 @@ class Choice extends Marionette.LayoutView
       behaviorClass: Actionable
       helpers:
         letter: () => @model.letter()
+        canMoveUp: () =>
+          @model.canMoveUp()
+        canMoveDown: () =>
+          @model.canMoveDown()
 
   viewClassMap:
     'simple': SimpleChoiceView
@@ -38,5 +46,11 @@ class Choice extends Marionette.LayoutView
   onShow: () ->
     ViewClass = @viewClassMap[@model.type()]
     @container.show(new ViewClass model:@model)
+
+  onChoiceMoveup: () ->
+    @model.moveUp()
+
+  onChoiceMovedown: () ->
+    @model.moveDown()
 
 module.exports = Choice

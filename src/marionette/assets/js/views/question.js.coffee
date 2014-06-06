@@ -10,6 +10,9 @@ class Question extends Marionette.LayoutView
   id: () ->
     "part-#{@model.collection.owner().get('position')}-question-#{@model.get('position')}-container"
 
+  initialize: () ->
+    @listenTo @model.get('choices'), 'add remove', () => @triggerMethod('refresh:actions')
+
   tagName: 'li'
   className: 'question-container has-drawer'
   template: '#question-template'
@@ -26,21 +29,27 @@ class Question extends Marionette.LayoutView
     'click .js-add-none-choice-button': 'OnAddButtonClick'
 
   behaviors: () ->
-    self = this
     Deleteable:
       behaviorClass: Deleteable
     Actionable:
       behaviorClass: Actionable
+      helpers:
+        canAddCombo: () =>
+          @model.canAddCombo()
+        canAddAll: () =>
+          @model.canAddAll()
+        canAddNone: () =>
+          @model.canAddNone()
     ContentEditable:
       behaviorClass: ContentEditable
       prompts:
         add: 'Click here to add the question stem.'
         edit: 'Click to edit the question stem.'
-      contentRegion: self.content
-      loadContent: () -> self.model.questionStem
-      saveChanges: (content) ->
-        self.model.questionStem = content
-        self.model.save()
+      contentRegion: @content
+      loadContent: () => @model.questionStem
+      saveChanges: (content) =>
+        @model.questionStem = content
+        @model.save()
 
   onShow: () ->
     @choicesView = new ChoicesView
@@ -50,11 +59,9 @@ class Question extends Marionette.LayoutView
   OnAddButtonClick: (e) ->
     e.preventDefault()
     e.stopPropagation()
-    self = this
-    _.each ['simple', 'combo', 'all', 'none'], (type) ->
+    _.each ['simple', 'combo', 'all', 'none'], (type) =>
       if $(e.currentTarget).hasClass "#{type}-choice"
-        self.choicesView?.triggerMethod 'choice:add', type
+        @choicesView?.triggerMethod 'choice:add', type
         return false
-
 
 module.exports = Question

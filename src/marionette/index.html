@@ -87,9 +87,15 @@
     <script type="text/template" id="question-actions-template">
       <h4>Question <%= number() %></h4>
       <button class="js-add-choice-button action simple-choice secondary">Add choice</button>
+      <% if (canAddCombo()) {%>
       <button class="js-add-combo-choice-button action combo-choice secondary">Add &quot;(a) &amp; (b)&quot; choice</button>
+      <% } %>
+      <% if (canAddAll()) {%>
       <button class="js-add-all-choice-button action all-choice secondary">Add &quot;All of the above&quot; choice</button>
+      <% } %>
+      <% if (canAddNone()) {%>
       <button class="js-add-none-choice-button action none-choice secondary">Add &quot;None of the above&quot; choice</button>
+      <% } %>
       <button class="js-delete-question-button action secondary">Delete question</button>
     </script>
     <script type="text/template" id="choice-container-template">
@@ -99,6 +105,12 @@
     </script>
     <script type="text/template" id="choice-actions-template">
       <h4>Choice (<%= letter() %>)</h4>
+      <% if (canMoveUp()) { %>
+      <button class="js-move-up-choice-button action secondary">Move choice up</button>
+      <% } %>
+      <% if (canMoveDown()) { %>
+      <button class="js-move-down-choice-button action secondary">Move choice down</button>
+      <% } %>
       <button class="js-delete-choice-button action secondary">Delete choice</button>
     </script>
     <script type="text/template" id="simple-choice-template">
