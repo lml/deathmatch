@@ -2,6 +2,7 @@ Marionette = require 'marionette'
 QuestionsView = require './questions.js.coffee'
 ContentEditable = require '../behaviors/content_editable.js.coffee'
 Actionable = require '../behaviors/actionable.js.coffee'
+Deleteable = require '../behaviors/deleteable.js.coffee'
 
 class Part extends Marionette.LayoutView
 
@@ -19,10 +20,11 @@ class Part extends Marionette.LayoutView
 
   triggers:
     'click .js-add-question-button': 'question:add'
-    'click .js-delete-part-button': 'part:delete'
 
   behaviors: () ->
     self = this
+    Deleteable:
+      behaviorClass: Deleteable
     Actionable:
       behaviorClass: Actionable
     ContentEditable:
@@ -43,8 +45,5 @@ class Part extends Marionette.LayoutView
 
   onQuestionAdd: () ->
     @questionsView?.triggerMethod 'question:add'
-
-  onPartDelete: () ->
-    @model.destroy()
 
 module.exports = Part

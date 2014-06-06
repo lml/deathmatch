@@ -2,6 +2,7 @@ Marionette = require 'marionette'
 ChoicesView = require './choices.js.coffee'
 ContentEditable = require '../behaviors/content_editable.js.coffee'
 Actionable = require '../behaviors/actionable.js.coffee'
+Deleteable = require '../behaviors/deleteable.js.coffee'
 $ = require 'jquery'
 
 class Question extends Marionette.LayoutView
@@ -26,6 +27,8 @@ class Question extends Marionette.LayoutView
 
   behaviors: () ->
     self = this
+    Deleteable:
+      behaviorClass: Deleteable
     Actionable:
       behaviorClass: Actionable
     ContentEditable:

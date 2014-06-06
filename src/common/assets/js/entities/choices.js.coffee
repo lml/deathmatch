@@ -10,7 +10,7 @@ class Choices extends AssociatedCollection
   positionField: 'position'
 
   initialize: () ->
-    @listenTo this, 'sort', @setPositionsFromIndex
+    @listenTo this, 'add remove sort', @setPositionsFromIndex
 
   comparator: (left, right) ->
     left.compare(right)

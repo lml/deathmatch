@@ -40,13 +40,13 @@ deathMatch.stub = function() {
     };
 
     self.findQuestion = function(exerciseId, partId, questionId) {
-        var part = findPart(exerciseId, partId);
-        return find(part.questions, questionId);
+        var part = self.findPart(exerciseId, partId);
+        return self.find(part.questions, questionId);
     };
 
     self.findChoice = function(exerciseId, partId, questionId, choiceId) {
-        var question = findQuestion(exerciseId, partId, questionId);
-        return find(question.choices, choiceId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        return self.find(question.choices, choiceId);
     };
 
     self.update = function(exerciseId, data) {
@@ -97,7 +97,7 @@ deathMatch.stub = function() {
     self.updateQuestion = function(exerciseId, partId, questionId, data) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
-        var question = findQuestion(exerciseId, partId, questionId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
         updateAttributes(data, question, ['stem', 'choices']);
         return question;
     };
@@ -105,7 +105,7 @@ deathMatch.stub = function() {
     self.removeQuestion = function(exerciseId, partId, questionId) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
-        var question = findQuestion(exerciseId, partId, questionId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
         var index = questions.indexOf(question);
         if (index >= 0) {
             questions.splice(index, 1);
@@ -118,7 +118,7 @@ deathMatch.stub = function() {
     self.addChoice = function(exerciseId, partId, questionId, data) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
-        var question = findQuestion(exerciseId, partId, questionId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
         var choices = question.choices;
         self.maxIds.choice += 1;
         data.id = self.maxIds.choice;
@@ -132,9 +132,9 @@ deathMatch.stub = function() {
     self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
-        var question = findQuestion(exerciseId, partId, questionId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
         var choices = question.choices;
-        var choice = findChoice(exerciseId, partId, questionId, choiceId);
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
         updateAttributes(data, choice, ['position', 'content', 'combos']);
         return choice;
     };
@@ -142,9 +142,9 @@ deathMatch.stub = function() {
     self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
-        var question = findQuestion(exerciseId, partId, questionId);
+        var question = self.findQuestion(exerciseId, partId, questionId);
         var choices = question.choices;
-        var choice = findChoice(exerciseId, partId, questionId, choiceId);
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
         var index = choices.indexOf(choice);
         if (index >= 0) {
             choices.splice(index, 1);

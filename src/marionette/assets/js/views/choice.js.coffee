@@ -3,6 +3,7 @@ SimpleChoiceView = require './simple_choice.js.coffee'
 ComboChoiceView = require './combo_choice.js.coffee'
 QuantifierChoiceView = require './quantifier_choice.js.coffee'
 Actionable = require '../behaviors/actionable.js.coffee'
+Deleteable = require '../behaviors/deleteable.js.coffee'
 
 class Choice extends Marionette.LayoutView
 
@@ -21,6 +22,8 @@ class Choice extends Marionette.LayoutView
     actions: '.js-choice-actions-container'
 
   behaviors: () ->
+    Deleteable:
+      behaviorClass: Deleteable
     Actionable:
       behaviorClass: Actionable
       helpers:
