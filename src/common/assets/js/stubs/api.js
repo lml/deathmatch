@@ -16,9 +16,37 @@ deathMatch.stub = function() {
         });
     };
 
+    self.maxIds = {
+        exercise: 1,
+        part: 0,
+        question: 0,
+        choice: 0
+    };
+
     self.exercise = {
         background: "",
         parts: []
+    };
+
+    self.find = function(coll, id) {
+        id = parseInt(id);
+        return _.findWhere(coll, {
+            id: id
+        });
+    };
+
+    self.findPart = function(exerciseId, partId) {
+        return self.find(exercise.parts, partId);
+    };
+
+    self.findQuestion = function(exerciseId, partId, questionId) {
+        var part = findPart(exerciseId, partId);
+        return find(part.questions, questionId);
+    };
+
+    self.findChoice = function(exerciseId, partId, questionId, choiceId) {
+        var question = findQuestion(exerciseId, partId, questionId);
+        return find(question.choices, choiceId);
     };
 
     self.update = function(exerciseId, data) {
@@ -27,31 +55,39 @@ deathMatch.stub = function() {
     };
 
     self.addPart = function(exerciseId, data) {
-        data.id = self.exercise.parts.length;
+        self.maxIds.part += 1;
+        data.id = self.maxIds.part;
         data.background = "";
-        data.position = data.id;
+        data.position = self.exercise.parts.length;
         data.questions = [];
         self.exercise.parts.push(data);
         return data;
     };
 
     self.updatePart = function(exerciseId, partId, data) {
-        var part = self.exercise.parts[partId];
+        var part = self.findPart(exerciseId, partId);
         updateAttributes(data, part, ['background', 'questions']);
         return part;
     };
 
     self.removePart = function(exerciseId, partId) {
-        self.exercise.parts.splice(id, 1);
+        var parts = self.exercise.parts;
+        var part = self.findPart(exerciseId, partId);
+        var index = parts.indexOf(part);
+        if (index >= 0) {
+            parts.splice(index, 1);
+        }
         return {
             success: true
         };
     };
 
     self.addQuestion = function(exerciseId, partId, data) {
-        var questions = self.exercise.parts[partId].questions;
-        data.id = questions.length;
-        data.position = data.id;
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        self.maxIds.question += 1;
+        data.id = self.maxIds.question;
+        data.position = questions.length;
         data.stem = "";
         data.choices = [];
         questions.push(data);
@@ -59,35 +95,60 @@ deathMatch.stub = function() {
     };
 
     self.updateQuestion = function(exerciseId, partId, questionId, data) {
-        var question = self.exercise.parts[partId].questions[questionId];
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = findQuestion(exerciseId, partId, questionId);
         updateAttributes(data, question, ['stem', 'choices']);
         return question;
     };
 
     self.removeQuestion = function(exerciseId, partId, questionId) {
-        self.exercise.parts[partId].questions.splice(questionId, 1);
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = findQuestion(exerciseId, partId, questionId);
+        var index = questions.indexOf(question);
+        if (index >= 0) {
+            questions.splice(index, 1);
+        }
         return {
             success: true
         };
     };
 
     self.addChoice = function(exerciseId, partId, questionId, data) {
-        data.id = self.exercise.parts[partId].questions[questionId].choices.length;
-        data.position = data.id;
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        self.maxIds.choice += 1;
+        data.id = self.maxIds.choice;
+        data.position = choices.length;
         data.content = "";
         data.combos = [];
-        self.exercise.parts[partId].questions[questionId].choices.push(data);
+        choices.push(data);
         return data;
     };
 
     self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
-        var choice = self.exercise.parts[partId].questions[questionId].choices[choiceId];
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = findChoice(exerciseId, partId, questionId, choiceId);
         updateAttributes(data, choice, ['position', 'content', 'combos']);
         return choice;
     };
 
     self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
-        self.exercise[partId].questions[questionId].choices.splice(choiceId, 1);
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = findChoice(exerciseId, partId, questionId, choiceId);
+        var index = choices.indexOf(choice);
+        if (index >= 0) {
+            choices.splice(index, 1);
+        }
         return {
             succes: true
         };

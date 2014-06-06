@@ -71,22 +71,26 @@
       <div class="js-part-background-container content-container"></div>
       <div class="js-part-questions-container questions-container"></div>
       <div class="js-part-actions-container action-panel drawer">
-        <h4>Part <%= position + 1 %></h4>
-        <button class="js-delete-part-button action secondary">Delete part</button>
-        <button class="js-add-question-button action secondary">Add question</button>
       </div>
+    </script>
+    <script type="text/template" id="part-actions-template">
+      <h4>Part <%= number() %></h4>
+      <button class="js-add-question-button action secondary">Add question</button>
+      <button class="js-delete-part-button action secondary">Delete part</button>
     </script>
     <script type="text/template" id="question-template">
       <div class="js-question-stem-container content-container"></div>
       <div class="js-question-choices-container choices-container"></div>
       <div class="js-question-actions-container action-panel drawer">
-        <h4>Question <%= position + 1 %></h4>
-        <button class="js-add-choice-button action simple-choice secondary">Add choice</button>
-        <button class="js-add-combo-choice-button action combo-choice secondary">Add &quot;(a) &amp; (b)&quot; choice</button>
-        <button class="js-add-all-choice-button action all-choice secondary">Add &quot;All of the above&quot; choice</button>
-        <button class="js-add-none-choice-button action none-choice secondary">Add &quot;None of the above&quot; choice</button>
-        <button class="js-delete-question-button action secondary">Delete question</button>
       </div>
+    </script>
+    <script type="text/template" id="question-actions-template">
+      <h4>Question <%= number() %></h4>
+      <button class="js-add-choice-button action simple-choice secondary">Add choice</button>
+      <button class="js-add-combo-choice-button action combo-choice secondary">Add &quot;(a) &amp; (b)&quot; choice</button>
+      <button class="js-add-all-choice-button action all-choice secondary">Add &quot;All of the above&quot; choice</button>
+      <button class="js-add-none-choice-button action none-choice secondary">Add &quot;None of the above&quot; choice</button>
+      <button class="js-delete-question-button action secondary">Delete question</button>
     </script>
     <script type="text/template" id="choice-container-template">
       <div class="js-choice-item choice-item"></div>

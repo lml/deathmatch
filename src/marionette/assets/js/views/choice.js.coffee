@@ -2,7 +2,7 @@ Marionette = require 'marionette'
 SimpleChoiceView = require './simple_choice.js.coffee'
 ComboChoiceView = require './combo_choice.js.coffee'
 QuantifierChoiceView = require './quantifier_choice.js.coffee'
-ChoiceActionsView = require './choice_actions.js.coffee'
+Actionable = require '../behaviors/actionable.js.coffee'
 
 class Choice extends Marionette.LayoutView
 
@@ -18,7 +18,13 @@ class Choice extends Marionette.LayoutView
 
   regions:
     container: '.js-choice-item'
-    panel: '.js-choice-actions-container'
+    actions: '.js-choice-actions-container'
+
+  behaviors: () ->
+    Actionable:
+      behaviorClass: Actionable
+      helpers:
+        letter: () => @model.letter()
 
   viewClassMap:
     'simple': SimpleChoiceView
@@ -29,6 +35,5 @@ class Choice extends Marionette.LayoutView
   onShow: () ->
     ViewClass = @viewClassMap[@model.type()]
     @container.show(new ViewClass model:@model)
-    @panel.show(new ChoiceActionsView model:@model)
 
 module.exports = Choice

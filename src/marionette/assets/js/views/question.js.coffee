@@ -1,6 +1,7 @@
 Marionette = require 'marionette'
 ChoicesView = require './choices.js.coffee'
 ContentEditable = require '../behaviors/content_editable.js.coffee'
+Actionable = require '../behaviors/actionable.js.coffee'
 $ = require 'jquery'
 
 class Question extends Marionette.LayoutView
@@ -15,6 +16,7 @@ class Question extends Marionette.LayoutView
   regions:
     content: '.js-question-stem-container'
     choices: '.js-question-choices-container'
+    actions: '.js-question-actions-container'
 
   events:
     'click .js-add-choice-button': 'OnAddButtonClick'
@@ -24,6 +26,8 @@ class Question extends Marionette.LayoutView
 
   behaviors: () ->
     self = this
+    Actionable:
+      behaviorClass: Actionable
     ContentEditable:
       behaviorClass: ContentEditable
       prompts:

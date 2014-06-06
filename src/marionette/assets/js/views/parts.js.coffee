@@ -12,6 +12,9 @@ class Parts extends Marionette.CollectionView
   onPartAdd: () ->
     @collection.create {}, wait: true
 
+  onRemoveChild: () ->
+    @triggerMethod 'children:changed'
+
   onAddChild: (child) ->
     child.triggerMethod 'show'
     @triggerMethod 'children:changed'
