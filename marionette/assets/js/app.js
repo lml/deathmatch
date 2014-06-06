@@ -16080,13 +16080,15 @@ ExerciseEditor.start();
 
 
 },{"./entities/exercise.js.coffee":50,"./entities/parts.js.coffee":52,"./stubs/api.js":55,"./views/exercise.js.coffee":64}],44:[function(require,module,exports){
-var Actionable, ActionsView, Marionette,
+var Actionable, ActionsView, Marionette, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Marionette = (window.Marionette);
 
 ActionsView = require('../views/actions.js.coffee');
+
+_ = (window._);
 
 Actionable = (function(_super) {
   __extends(Actionable, _super);
@@ -16110,9 +16112,14 @@ Actionable = (function(_super) {
   Actionable.prototype.onShow = function() {
     this.actionsView = new ActionsView({
       model: this.view.model,
-      helpers: this.options.helpers
+      helpers: _.extend({}, this.defaults.helpers, this.options.helpers)
     });
     return this.view.actions.show(this.actionsView);
+  };
+
+  Actionable.prototype.onRefreshActions = function() {
+    var _ref;
+    return (_ref = this.actionsView) != null ? _ref.rerender() : void 0;
   };
 
   return Actionable;
@@ -16360,6 +16367,25 @@ Choice = (function(_super) {
     return String.fromCharCode(97 + this.position());
   };
 
+  Choice.prototype.canMoveUp = function() {
+    return this.type() === 'simple' && this.position() > 0;
+  };
+
+  Choice.prototype.canMoveDown = function() {
+    var isBottom, isLastSimpleChoice;
+    isBottom = (function(_this) {
+      return function() {
+        return _this.position() === _this.collection.length - 1;
+      };
+    })(this);
+    isLastSimpleChoice = (function(_this) {
+      return function() {
+        return _this.collection.at(_this.position() + 1).type() !== 'simple';
+      };
+    })(this);
+    return this.type() === 'simple' && !(isBottom() || isLastSimpleChoice());
+  };
+
   Choice.prototype.type = function() {
     return this.get('type');
   };
@@ -16420,6 +16446,22 @@ Choice = (function(_super) {
         return sc.position();
       });
     }
+  };
+
+  Choice.prototype.moveUp = function() {
+    var idx;
+    if (this.canMoveUp()) {
+      idx = this.position();
+    }
+    return this.collection.move(idx, idx - 1);
+  };
+
+  Choice.prototype.moveDown = function() {
+    var idx;
+    if (this.canMoveDown()) {
+      idx = this.position();
+    }
+    return this.collection.move(idx, idx + 1);
   };
 
   return Choice;
@@ -16497,7 +16539,7 @@ Choices = (function(_super) {
     if (from instanceof Backbone.Model) {
       from = from.get(this.positionField);
     }
-    this.models.move(from, to);
+    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
     this.setPositionsFromIndex();
     this.sort();
     return this.savePositions({
@@ -16622,7 +16664,7 @@ module.exports = Parts;
 
 
 },{"./associated_collection.js.coffee":47,"./part.js.coffee":51}],53:[function(require,module,exports){
-var Backbone, Choices, Question,
+var Backbone, Choices, Question, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -16631,6 +16673,8 @@ Backbone = (window.Backbone);
 (window.Backbone.AssociatedModel);
 
 Choices = require('./choices.js.coffee');
+
+_ = (window._);
 
 Question = (function(_super) {
   __extends(Question, _super);
@@ -16641,6 +16685,36 @@ Question = (function(_super) {
 
   Question.prototype.defaults = {
     type: 'multiple_choice_question'
+  };
+
+  Question.prototype.counts = function() {
+    var counts;
+    counts = this.get('choices').countBy('type');
+    return _.extend({}, {
+      all: 0,
+      none: 0,
+      simple: 0,
+      combo: 0
+    }, counts);
+  };
+
+  Question.prototype.canAddCombo = function() {
+    var counts, n;
+    counts = this.counts();
+    n = counts.simple;
+    return n >= 2 && counts.combo < (Math.pow(2, n) - (n + 1));
+  };
+
+  Question.prototype.canAddAll = function() {
+    var counts;
+    counts = this.counts();
+    return counts.all === 0 && counts.simple >= 2;
+  };
+
+  Question.prototype.canAddNone = function() {
+    var counts;
+    counts = this.counts();
+    return counts.simple > 1 && counts.none === 0;
   };
 
   Question.prototype.relations = [
@@ -16977,6 +17051,11 @@ Choice = (function(_super) {
 
   Choice.prototype.template = "#choice-container-template";
 
+  Choice.prototype.triggers = {
+    'click .js-move-up-choice-button': 'choice:moveup',
+    'click .js-move-down-choice-button': 'choice:movedown'
+  };
+
   Choice.prototype.regions = {
     container: '.js-choice-item',
     actions: '.js-choice-actions-container'
@@ -16993,6 +17072,16 @@ Choice = (function(_super) {
           letter: (function(_this) {
             return function() {
               return _this.model.letter();
+            };
+          })(this),
+          canMoveUp: (function(_this) {
+            return function() {
+              return _this.model.canMoveUp();
+            };
+          })(this),
+          canMoveDown: (function(_this) {
+            return function() {
+              return _this.model.canMoveDown();
             };
           })(this)
         }
@@ -17013,6 +17102,14 @@ Choice = (function(_super) {
     return this.container.show(new ViewClass({
       model: this.model
     }));
+  };
+
+  Choice.prototype.onChoiceMoveup = function() {
+    return this.model.moveUp();
+  };
+
+  Choice.prototype.onChoiceMovedown = function() {
+    return this.model.moveDown();
   };
 
   return Choice;
@@ -17640,6 +17737,14 @@ Question = (function(_super) {
     return "part-" + (this.model.collection.owner().get('position')) + "-question-" + (this.model.get('position')) + "-container";
   };
 
+  Question.prototype.initialize = function() {
+    return this.listenTo(this.model.get('choices'), 'add remove', (function(_this) {
+      return function() {
+        return _this.triggerMethod('refresh:actions');
+      };
+    })(this));
+  };
+
   Question.prototype.tagName = 'li';
 
   Question.prototype.className = 'question-container has-drawer';
@@ -17660,14 +17765,29 @@ Question = (function(_super) {
   };
 
   Question.prototype.behaviors = function() {
-    var self;
-    self = this;
     return {
       Deleteable: {
         behaviorClass: Deleteable
       },
       Actionable: {
-        behaviorClass: Actionable
+        behaviorClass: Actionable,
+        helpers: {
+          canAddCombo: (function(_this) {
+            return function() {
+              return _this.model.canAddCombo();
+            };
+          })(this),
+          canAddAll: (function(_this) {
+            return function() {
+              return _this.model.canAddAll();
+            };
+          })(this),
+          canAddNone: (function(_this) {
+            return function() {
+              return _this.model.canAddNone();
+            };
+          })(this)
+        }
       },
       ContentEditable: {
         behaviorClass: ContentEditable,
@@ -17675,14 +17795,18 @@ Question = (function(_super) {
           add: 'Click here to add the question stem.',
           edit: 'Click to edit the question stem.'
         },
-        contentRegion: self.content,
-        loadContent: function() {
-          return self.model.questionStem;
-        },
-        saveChanges: function(content) {
-          self.model.questionStem = content;
-          return self.model.save();
-        }
+        contentRegion: this.content,
+        loadContent: (function(_this) {
+          return function() {
+            return _this.model.questionStem;
+          };
+        })(this),
+        saveChanges: (function(_this) {
+          return function(content) {
+            _this.model.questionStem = content;
+            return _this.model.save();
+          };
+        })(this)
       }
     };
   };
@@ -17695,19 +17819,19 @@ Question = (function(_super) {
   };
 
   Question.prototype.OnAddButtonClick = function(e) {
-    var self;
     e.preventDefault();
     e.stopPropagation();
-    self = this;
-    return _.each(['simple', 'combo', 'all', 'none'], function(type) {
-      var _ref;
-      if ($(e.currentTarget).hasClass("" + type + "-choice")) {
-        if ((_ref = self.choicesView) != null) {
-          _ref.triggerMethod('choice:add', type);
+    return _.each(['simple', 'combo', 'all', 'none'], (function(_this) {
+      return function(type) {
+        var _ref;
+        if ($(e.currentTarget).hasClass("" + type + "-choice")) {
+          if ((_ref = _this.choicesView) != null) {
+            _ref.triggerMethod('choice:add', type);
+          }
+          return false;
         }
-        return false;
-      }
-    });
+      };
+    })(this));
   };
 
   return Question;
