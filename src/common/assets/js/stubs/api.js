@@ -145,11 +145,11 @@ fauxServer
         function(context, exerciseId, partId, questionId) {
             return exercise.addChoice(exerciseId, partId, questionId, context.data);
         })
-    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
             return exercise.updateChoice(exerciseId, partId, questionId, choiceId, context.data);
         })
-    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
+    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
             return exercise.removeChoice(exerciseId, partId, questionId, choiceId);
         });

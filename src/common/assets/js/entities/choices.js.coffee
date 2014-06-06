@@ -2,15 +2,15 @@ Backbone = require 'backbone'
 AssociatedCollection = require './associated_collection.js.coffee'
 Choice = require './choice.js.coffee'
 $ = require 'jquery'
+_ = require 'underscore'
 
 class Choices extends AssociatedCollection
   model: Choice
 
   positionField: 'position'
 
-  initialize: () ->
-    # When a model is removed, this will update the remaining positions w/o a sync
-    @listenTo this, 'remove', @setPositionsFromIndex
+  #initialize: () ->
+    #@listenTo this, 'sort', @setPositionsFromIndex
 
   comparator: (left, right) ->
     left.compare(right)
@@ -21,12 +21,9 @@ class Choices extends AssociatedCollection
     _.defaults(
       options,
       {
-        url: @models[0].urlRoot + '/sort',
         attrs:
-          newPositions: @collect (model) => {id: model.get('id'), position: model.get(@positionField)}
-      }
-    )
-
+          order: _.map (@filter (model) -> model.hasChanged), (model) -> {id: model.get('id'), position: model.get(@positionField)}
+      })
     @sync 'update', this, options
 
   setPositionsFromIndex: () ->

@@ -35,4 +35,7 @@ class Editor extends Marionette.ItemView
   onContentChanged: (html) ->
     @editor?.setHTML html
 
+  onDisplay: () ->
+    @editor?.focus()
+
 module.exports = Editor

@@ -83,7 +83,7 @@ function marionetteApp(config) {
             .bundle({
                 debug: config.dev
             })
-            .on('error', handleErrors)
+            .on('error', handleErrors("Browserify error"))
             .pipe(vsource('app.js'))
             .pipe(vtrans(function() {
                 return exorcist(folders.dest + '/marionette/assets/js/app.js.map');
@@ -121,26 +121,24 @@ function runStylus(config) {
             use: [nib()],
             import: ['nib']
         }))
-        .on("error", notify.onError({
-            message: "<%= error.message %>",
-            title: "Stylus Error"
-        }))
+        .on("error", handleErrors("Stylus Error"))
         .pipe(gulp.dest(folders.dest + '/marionette/assets/css'));
 }
 
-function handleErrors() {
+function handleErrors(title) {
+    return function() {
+      var args = Array.prototype.slice.call(arguments);
 
-    var args = Array.prototype.slice.call(arguments);
+      // Send error to notification center with gulp-notify
+      notify.onError({
+          title: title,
+          message: "<%= error.message %>"
+      }).apply(this, args);
+      console.log(args);
 
-    // Send error to notification center with gulp-notify
-    notify.onError({
-        title: "Compile Error",
-        message: "<%= error.message %>"
-    }).apply(this, args);
-    console.log(args);
-
-    // Keep gulp from hanging on this task
-    this.emit('end');
+      // Keep gulp from hanging on this task
+      this.emit('end');
+      };
 }
 
 function build(config) {

@@ -12,7 +12,7 @@ class Choice extends Marionette.LayoutView
     "part-#{part}-question-#{question}-choice-#{choice}-container"
 
   tagName: 'li'
-  className: 'js-choice-container hoverable'
+  className: 'js-choice-container choice-container has-drawer'
   template: "#choice-container-template"
 
   regions:
@@ -23,6 +23,11 @@ class Choice extends Marionette.LayoutView
     'combo': ComboChoiceView
     'all': QuantifierChoiceView
     'none': QuantifierChoiceView
+
+  templateHelpers: () ->
+    self = this
+    letter: () ->
+     self.model.letter()
 
   onShow: () ->
     ViewClass = @viewClassMap[@model.type()]

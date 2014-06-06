@@ -9,30 +9,33 @@ lightbluish = #2266ff
 
 global-reset()
 
+*:focus
+  outline none
+
 body
     background-color whitish
     color            blackish
-    
+
 article.main
   width 1024px
   min-height 800px
   margin 0 auto
   background-color white
   padding 24px
-  
+
 .ql-box
   margin 12px
   background-color white
   border 1px solid grey
-  
+
 .ql-toolbar
   border-bottom 1px solid grey
-  
+
 .ql-footer
   border-top 1px solid grey
   padding 8px
   text-align right
-  
+
 .hoverable
   position relative
   .on-hover
@@ -41,10 +44,15 @@ article.main
   &:hover
     .on-hover
       display inline-block
-      
+
+.button-panel
+  text-align right
+  width 95%
+  position absolute
+
 .has-drawer
   position relative
-  
+
   .drawer
     position absolute
     left 100%
@@ -52,7 +60,7 @@ article.main
     display inline-block
     width 240px
     margin-left 24px
-    
+
 .action-panel
   padding 4px
   background-color white
@@ -74,56 +82,42 @@ button.action
   color bluish
   &:hover
     color lightbluish
- 
+
 button.secondary
   &:hover
     text-decoration underline
-  
+
 button.primary
   border 1px solid grey
   background-color whitish
 
-ol.numbered
-  list-style-type decimal !ie
+styled-ordered-list(ctype, prefix="", suffix="", width=0.8em, lmargin=3em, lpadding=3em, top=0px, left=0px, fsize=1em, fweight=normal)
+  list-style-type ctype !ie
   margin 0
-  margin-left 3em
+  margin-left lmargin
   counter-reset li-counter
   
+  >li
+    padding-left lpadding
+    &:before
+      position absolute
+      top top
+      left left
+      width width
+      font-size fsize
+      font-weight fweight
+      line-height 1em
+      text-align right
+      content prefix counter(li-counter, ctype) suffix
+      counter-increment li-counter
+
+ol.numbered
+  styled-ordered-list(decimal, suffix:")", lmargin:0.5em, lpadding:2.5em, fsize:1.5em, fweight:bold)
   > li
     border-bottom 1px dotted whitish
-  
-  > li:before
-    position absolute
-    top 0px
-    left -2em
-    width 0.8em
-     
-    font-size 1.5em
-    line-height 1
-    font-weight bold
-    text-align right
- 
-    content counter(li-counter) ")"
-    counter-increment li-counter
     
 ol.letters
-  list-style-type lower-alpha !ie
-  margin 0
-  margin-left 2.5em
-  counter-reset li-counter
-    
-  > li:before
-    position absolute
-    top -1px
-    left -2em
-    width 0.8em
-     
-    font-size 1em
-    line-height 2em
-    text-align right
- 
-    content "(" counter(li-counter, lower-alpha) ")"
-    counter-increment li-counter
+  styled-ordered-list(lower-alpha, prefix:"(", suffix:")", lmargin:2.5em, top: 6px)
 
 .content-container
   margin 24px 0
@@ -148,42 +142,62 @@ ol.letters
       display none
     .prompter-container
       display block
-      
-.prompter-container div
+
+.prompter-container
   text-align center
   border 1px dotted grey
   border-radius 5px
-  padding 24px
   cursor pointer
+  position relative
   background-color beige
   .prompt-add-tip
     display none
   .prompt-edit-tip
-    display inline
+    display block
   .empty-content
+    position relative
+    span
+      width 100%
+      position absolute
+      left 0
+      top 45%
     .prompt-add-tip
-      display inline
+      display block
     .prompt-edit-tip
       display none
 
-.viewer-container div
+.viewer-container
   cursor pointer
-  border 1px dotted transparent
+  border 1px dotted transparent !ie
   border-radius 4px
-  padding 12px
   .action
     top 0px
     right 0px
   &:hover
-    border-color grey
+    border-color grey !ie
+    outline 1px dotted grey
+
+.editor-container
+.viewer-container
+.prompter-container
+  min-height 80px
+  > div
+    min-height 80px
+    
+.viewer
+  padding 8px
 
 .part-container
-  margin 12px 0
+  margin 12px 0 48px
   min-height 240px
-  
-.choice-item
-  max-width 80%
-  line-height 2em
 
 .question-container
+  > .content-container
+    min-height 140px
+
+.choice-container
+  min-height 90px
+
+.question-container
+  margin 12px 0
   min-height 140px

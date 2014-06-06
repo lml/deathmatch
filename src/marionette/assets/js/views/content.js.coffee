@@ -1,4 +1,5 @@
 Marionette = require 'marionette'
+_ = require 'underscore'
 
 Editor = require './editor.js.coffee'
 Viewer = require './viewer.js.coffee'
@@ -13,6 +14,11 @@ class Content extends Marionette.LayoutView
     viewer: '.js-viewer-container'
     prompter: '.js-prompter-container'
 
+  modeViews: () ->
+    edit: @editorView
+    view: @viewerView
+    prompt: @prompterView
+
   onShow: () ->
     @editorView = new Editor()
     @viewerView = new Viewer()
@@ -26,12 +32,13 @@ class Content extends Marionette.LayoutView
     @prompter.show @prompterView
 
   onContentChanged: (content) ->
-    @editorView?.triggerMethod 'content:changed', content
-    @viewerView?.triggerMethod 'content:changed', content
-    @prompterView?.triggerMethod 'content:changed', content
+    _.each @modeViews(), (view, mode) ->
+      view?.triggerMethod 'content:changed', content
 
   onModeChanged: (content, mode) ->
-    @onContentChanged content
+    @triggerMethod('content:changed', content)
+    _.each @modeViews(), (view, mode) ->
+      view?.triggerMethod 'display'
 
   editorContent: () ->
     @editorView?.getContent()
