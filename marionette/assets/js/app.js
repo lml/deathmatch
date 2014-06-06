@@ -16079,7 +16079,50 @@ ExerciseEditor.on("start", function() {
 ExerciseEditor.start();
 
 
-},{"./entities/exercise.js.coffee":48,"./entities/parts.js.coffee":50,"./stubs/api.js":53,"./views/exercise.js.coffee":61}],44:[function(require,module,exports){
+},{"./entities/exercise.js.coffee":50,"./entities/parts.js.coffee":52,"./stubs/api.js":55,"./views/exercise.js.coffee":64}],44:[function(require,module,exports){
+var Actionable, ActionsView, Marionette,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Marionette = (window.Marionette);
+
+ActionsView = require('../views/actions.js.coffee');
+
+Actionable = (function(_super) {
+  __extends(Actionable, _super);
+
+  function Actionable() {
+    return Actionable.__super__.constructor.apply(this, arguments);
+  }
+
+  Actionable.prototype.defaults = function() {
+    return {
+      helpers: {
+        number: (function(_this) {
+          return function() {
+            return _this.view.model.collection.indexOf(_this.view.model) + 1;
+          };
+        })(this)
+      }
+    };
+  };
+
+  Actionable.prototype.onShow = function() {
+    this.actionsView = new ActionsView({
+      model: this.view.model,
+      helpers: this.options.helpers
+    });
+    return this.view.actions.show(this.actionsView);
+  };
+
+  return Actionable;
+
+})(Marionette.Behavior);
+
+module.exports = Actionable;
+
+
+},{"../views/actions.js.coffee":56}],45:[function(require,module,exports){
 var $, ContentEditable, ContentView, Marionette, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16205,7 +16248,40 @@ ContentEditable = (function(_super) {
 module.exports = ContentEditable;
 
 
-},{"../views/content.js.coffee":59}],45:[function(require,module,exports){
+},{"../views/content.js.coffee":62}],46:[function(require,module,exports){
+var Deletable, Marionette,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Marionette = (window.Marionette);
+
+Deletable = (function(_super) {
+  __extends(Deletable, _super);
+
+  function Deletable() {
+    return Deletable.__super__.constructor.apply(this, arguments);
+  }
+
+  Deletable.prototype.events = function() {
+    var eventName, evs;
+    eventName = "click .js-delete-" + (this.view.model.constructor.name.toLowerCase()) + "-button";
+    evs = {};
+    evs[eventName] = 'deleteClicked';
+    return evs;
+  };
+
+  Deletable.prototype.deleteClicked = function() {
+    return this.view.model.destroy();
+  };
+
+  return Deletable;
+
+})(Marionette.Behavior);
+
+module.exports = Deletable;
+
+
+},{}],47:[function(require,module,exports){
 var AssociatedCollection, Backbone,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16246,7 +16322,7 @@ AssociatedCollection = (function(_super) {
 module.exports = AssociatedCollection;
 
 
-},{}],46:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var Backbone, Choice, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16353,8 +16429,8 @@ Choice = (function(_super) {
 module.exports = Choice;
 
 
-},{}],47:[function(require,module,exports){
-var $, AssociatedCollection, Backbone, Choice, Choices,
+},{}],49:[function(require,module,exports){
+var $, AssociatedCollection, Backbone, Choice, Choices, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -16365,6 +16441,8 @@ AssociatedCollection = require('./associated_collection.js.coffee');
 Choice = require('./choice.js.coffee');
 
 $ = (window.$);
+
+_ = (window._);
 
 Choices = (function(_super) {
   __extends(Choices, _super);
@@ -16378,7 +16456,7 @@ Choices = (function(_super) {
   Choices.prototype.positionField = 'position';
 
   Choices.prototype.initialize = function() {
-    return this.listenTo(this, 'remove', this.setPositionsFromIndex);
+    return this.listenTo(this, 'add remove sort', this.setPositionsFromIndex);
   };
 
   Choices.prototype.comparator = function(left, right) {
@@ -16393,16 +16471,15 @@ Choices = (function(_super) {
       return;
     }
     _.defaults(options, {
-      url: this.models[0].urlRoot + '/sort',
       attrs: {
-        newPositions: this.collect((function(_this) {
-          return function(model) {
-            return {
-              id: model.get('id'),
-              position: model.get(_this.positionField)
-            };
+        order: _.map(this.filter(function(model) {
+          return model.hasChanged;
+        }), function(model) {
+          return {
+            id: model.get('id'),
+            position: model.get(this.positionField)
           };
-        })(this))
+        })
       }
     });
     return this.sync('update', this, options);
@@ -16439,7 +16516,7 @@ Choices = (function(_super) {
 module.exports = Choices;
 
 
-},{"./associated_collection.js.coffee":45,"./choice.js.coffee":46}],48:[function(require,module,exports){
+},{"./associated_collection.js.coffee":47,"./choice.js.coffee":48}],50:[function(require,module,exports){
 var Backbone, Exercise, Part, Parts,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16481,7 +16558,7 @@ Exercise = (function(_super) {
 module.exports = Exercise;
 
 
-},{"./part.js.coffee":49,"./parts.js.coffee":50}],49:[function(require,module,exports){
+},{"./part.js.coffee":51,"./parts.js.coffee":52}],51:[function(require,module,exports){
 var Backbone, Part, Questions,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16519,7 +16596,7 @@ Part = (function(_super) {
 module.exports = Part;
 
 
-},{"./questions.js.coffee":52}],50:[function(require,module,exports){
+},{"./questions.js.coffee":54}],52:[function(require,module,exports){
 var AssociatedCollection, Part, Parts,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16544,7 +16621,7 @@ Parts = (function(_super) {
 module.exports = Parts;
 
 
-},{"./associated_collection.js.coffee":45,"./part.js.coffee":49}],51:[function(require,module,exports){
+},{"./associated_collection.js.coffee":47,"./part.js.coffee":51}],53:[function(require,module,exports){
 var Backbone, Choices, Question,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16581,7 +16658,7 @@ Question = (function(_super) {
 module.exports = Question;
 
 
-},{"./choices.js.coffee":47}],52:[function(require,module,exports){
+},{"./choices.js.coffee":49}],54:[function(require,module,exports){
 var AssociatedCollection, Question, Questions,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16606,7 +16683,7 @@ Questions = (function(_super) {
 module.exports = Questions;
 
 
-},{"./associated_collection.js.coffee":45,"./question.js.coffee":51}],53:[function(require,module,exports){
+},{"./associated_collection.js.coffee":47,"./question.js.coffee":53}],55:[function(require,module,exports){
 var fauxServer = (window.fauxServer);
 var _ = (window._);
 
@@ -16625,9 +16702,37 @@ deathMatch.stub = function() {
         });
     };
 
+    self.maxIds = {
+        exercise: 1,
+        part: 0,
+        question: 0,
+        choice: 0
+    };
+
     self.exercise = {
         background: "",
         parts: []
+    };
+
+    self.find = function(coll, id) {
+        id = parseInt(id);
+        return _.findWhere(coll, {
+            id: id
+        });
+    };
+
+    self.findPart = function(exerciseId, partId) {
+        return self.find(exercise.parts, partId);
+    };
+
+    self.findQuestion = function(exerciseId, partId, questionId) {
+        var part = self.findPart(exerciseId, partId);
+        return self.find(part.questions, questionId);
+    };
+
+    self.findChoice = function(exerciseId, partId, questionId, choiceId) {
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        return self.find(question.choices, choiceId);
     };
 
     self.update = function(exerciseId, data) {
@@ -16636,31 +16741,39 @@ deathMatch.stub = function() {
     };
 
     self.addPart = function(exerciseId, data) {
-        data.id = self.exercise.parts.length;
+        self.maxIds.part += 1;
+        data.id = self.maxIds.part;
         data.background = "";
-        data.position = data.id;
+        data.position = self.exercise.parts.length;
         data.questions = [];
         self.exercise.parts.push(data);
         return data;
     };
 
     self.updatePart = function(exerciseId, partId, data) {
-        var part = self.exercise.parts[partId];
+        var part = self.findPart(exerciseId, partId);
         updateAttributes(data, part, ['background', 'questions']);
         return part;
     };
 
     self.removePart = function(exerciseId, partId) {
-        self.exercise.parts.splice(id, 1);
+        var parts = self.exercise.parts;
+        var part = self.findPart(exerciseId, partId);
+        var index = parts.indexOf(part);
+        if (index >= 0) {
+            parts.splice(index, 1);
+        }
         return {
             success: true
         };
     };
 
     self.addQuestion = function(exerciseId, partId, data) {
-        var questions = self.exercise.parts[partId].questions;
-        data.id = questions.length;
-        data.position = data.id;
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        self.maxIds.question += 1;
+        data.id = self.maxIds.question;
+        data.position = questions.length;
         data.stem = "";
         data.choices = [];
         questions.push(data);
@@ -16668,35 +16781,60 @@ deathMatch.stub = function() {
     };
 
     self.updateQuestion = function(exerciseId, partId, questionId, data) {
-        var question = self.exercise.parts[partId].questions[questionId];
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
         updateAttributes(data, question, ['stem', 'choices']);
         return question;
     };
 
     self.removeQuestion = function(exerciseId, partId, questionId) {
-        self.exercise.parts[partId].questions.splice(questionId, 1);
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var index = questions.indexOf(question);
+        if (index >= 0) {
+            questions.splice(index, 1);
+        }
         return {
             success: true
         };
     };
 
     self.addChoice = function(exerciseId, partId, questionId, data) {
-        data.id = self.exercise.parts[partId].questions[questionId].choices.length;
-        data.position = data.id;
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        self.maxIds.choice += 1;
+        data.id = self.maxIds.choice;
+        data.position = choices.length;
         data.content = "";
         data.combos = [];
-        self.exercise.parts[partId].questions[questionId].choices.push(data);
+        choices.push(data);
         return data;
     };
 
     self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
-        var choice = self.exercise.parts[partId].questions[questionId].choices[choiceId];
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
         updateAttributes(data, choice, ['position', 'content', 'combos']);
         return choice;
     };
 
     self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
-        self.exercise[partId].questions[questionId].choices.splice(choiceId, 1);
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
+        var index = choices.indexOf(choice);
+        if (index >= 0) {
+            choices.splice(index, 1);
+        }
         return {
             succes: true
         };
@@ -16754,19 +16892,55 @@ fauxServer
         function(context, exerciseId, partId, questionId) {
             return exercise.addChoice(exerciseId, partId, questionId, context.data);
         })
-    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
             return exercise.updateChoice(exerciseId, partId, questionId, choiceId, context.data);
         })
-    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/choiceId",
+    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
         function(context, exerciseId, partId, questionId, choiceId) {
             return exercise.removeChoice(exerciseId, partId, questionId, choiceId);
         });
 
 fauxServer.enable();
 
-},{}],54:[function(require,module,exports){
-var Choice, ComboChoiceView, Marionette, QuantifierChoiceView, SimpleChoiceView,
+},{}],56:[function(require,module,exports){
+var Actions, Marionette,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Marionette = (window.Marionette);
+
+Actions = (function(_super) {
+  __extends(Actions, _super);
+
+  function Actions() {
+    return Actions.__super__.constructor.apply(this, arguments);
+  }
+
+  Actions.prototype.initialize = function() {
+    this.template = "#" + ("" + (this.model.constructor.name.toLowerCase()) + "-actions-template");
+    return this.listenTo(this.model.collection, 'change add remove', this.rerender);
+  };
+
+  Actions.prototype.rerender = function() {
+    if (!this.isDestroyed) {
+      return this.render();
+    }
+  };
+
+  Actions.prototype.templateHelpers = function() {
+    return this.options.helpers;
+  };
+
+  return Actions;
+
+})(Marionette.ItemView);
+
+module.exports = Actions;
+
+
+},{}],57:[function(require,module,exports){
+var Actionable, Choice, ComboChoiceView, Deleteable, Marionette, QuantifierChoiceView, SimpleChoiceView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -16777,6 +16951,10 @@ SimpleChoiceView = require('./simple_choice.js.coffee');
 ComboChoiceView = require('./combo_choice.js.coffee');
 
 QuantifierChoiceView = require('./quantifier_choice.js.coffee');
+
+Actionable = require('../behaviors/actionable.js.coffee');
+
+Deleteable = require('../behaviors/deleteable.js.coffee');
 
 Choice = (function(_super) {
   __extends(Choice, _super);
@@ -16795,12 +16973,31 @@ Choice = (function(_super) {
 
   Choice.prototype.tagName = 'li';
 
-  Choice.prototype.className = 'js-choice-container hoverable';
+  Choice.prototype.className = 'js-choice-container choice-container has-drawer';
 
   Choice.prototype.template = "#choice-container-template";
 
   Choice.prototype.regions = {
-    container: '.js-choice-item'
+    container: '.js-choice-item',
+    actions: '.js-choice-actions-container'
+  };
+
+  Choice.prototype.behaviors = function() {
+    return {
+      Deleteable: {
+        behaviorClass: Deleteable
+      },
+      Actionable: {
+        behaviorClass: Actionable,
+        helpers: {
+          letter: (function(_this) {
+            return function() {
+              return _this.model.letter();
+            };
+          })(this)
+        }
+      }
+    };
   };
 
   Choice.prototype.viewClassMap = {
@@ -16825,7 +17022,7 @@ Choice = (function(_super) {
 module.exports = Choice;
 
 
-},{"./combo_choice.js.coffee":56,"./quantifier_choice.js.coffee":65,"./simple_choice.js.coffee":68}],55:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":44,"../behaviors/deleteable.js.coffee":46,"./combo_choice.js.coffee":59,"./quantifier_choice.js.coffee":68,"./simple_choice.js.coffee":71}],58:[function(require,module,exports){
 var ChoiceView, Choices, Marionette,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16867,7 +17064,7 @@ Choices = (function(_super) {
 module.exports = Choices;
 
 
-},{"./choice.js.coffee":54}],56:[function(require,module,exports){
+},{"./choice.js.coffee":57}],59:[function(require,module,exports){
 var ComboChoice, ComboChoiceEditor, ComboChoiceViewer, Marionette,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16910,7 +17107,7 @@ ComboChoice = (function(_super) {
 module.exports = ComboChoice;
 
 
-},{"./combo_choice_editor.js.coffee":57,"./combo_choice_viewer.js.coffee":58}],57:[function(require,module,exports){
+},{"./combo_choice_editor.js.coffee":60,"./combo_choice_viewer.js.coffee":61}],60:[function(require,module,exports){
 var ComboChoiceEditor, Marionette,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16935,7 +17132,7 @@ ComboChoiceEditor = (function(_super) {
 module.exports = ComboChoiceEditor;
 
 
-},{}],58:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var ComboChoiceViewer, Marionette, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16981,12 +17178,14 @@ ComboChoiceViewer = (function(_super) {
 module.exports = ComboChoiceViewer;
 
 
-},{}],59:[function(require,module,exports){
-var Content, Editor, Marionette, Prompter, Viewer,
+},{}],62:[function(require,module,exports){
+var Content, Editor, Marionette, Prompter, Viewer, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Marionette = (window.Marionette);
+
+_ = (window._);
 
 Editor = require('./editor.js.coffee');
 
@@ -17007,6 +17206,14 @@ Content = (function(_super) {
     editor: '.js-editor-container',
     viewer: '.js-viewer-container',
     prompter: '.js-prompter-container'
+  };
+
+  Content.prototype.modeViews = function() {
+    return {
+      edit: this.editorView,
+      view: this.viewerView,
+      prompt: this.prompterView
+    };
   };
 
   Content.prototype.onShow = function() {
@@ -17031,18 +17238,16 @@ Content = (function(_super) {
   };
 
   Content.prototype.onContentChanged = function(content) {
-    var _ref, _ref1, _ref2;
-    if ((_ref = this.editorView) != null) {
-      _ref.triggerMethod('content:changed', content);
-    }
-    if ((_ref1 = this.viewerView) != null) {
-      _ref1.triggerMethod('content:changed', content);
-    }
-    return (_ref2 = this.prompterView) != null ? _ref2.triggerMethod('content:changed', content) : void 0;
+    return _.each(this.modeViews(), function(view, mode) {
+      return view != null ? view.triggerMethod('content:changed', content) : void 0;
+    });
   };
 
   Content.prototype.onModeChanged = function(content, mode) {
-    return this.onContentChanged(content);
+    this.triggerMethod('content:changed', content);
+    return _.each(this.modeViews(), function(view, mode) {
+      return view != null ? view.triggerMethod('display') : void 0;
+    });
   };
 
   Content.prototype.editorContent = function() {
@@ -17057,7 +17262,7 @@ Content = (function(_super) {
 module.exports = Content;
 
 
-},{"./editor.js.coffee":60,"./prompter.js.coffee":64,"./viewer.js.coffee":69}],60:[function(require,module,exports){
+},{"./editor.js.coffee":63,"./prompter.js.coffee":67,"./viewer.js.coffee":72}],63:[function(require,module,exports){
 var Editor, Marionett, Quill,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17116,6 +17321,11 @@ Editor = (function(_super) {
     return (_ref = this.editor) != null ? _ref.setHTML(html) : void 0;
   };
 
+  Editor.prototype.onDisplay = function() {
+    var _ref;
+    return (_ref = this.editor) != null ? _ref.focus() : void 0;
+  };
+
   return Editor;
 
 })(Marionette.ItemView);
@@ -17123,7 +17333,7 @@ Editor = (function(_super) {
 module.exports = Editor;
 
 
-},{"quilljs":2}],61:[function(require,module,exports){
+},{"quilljs":2}],64:[function(require,module,exports){
 var ContentEditable, Exercise, Marionette, PartsView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17197,8 +17407,8 @@ Exercise = (function(_super) {
 module.exports = Exercise;
 
 
-},{"../behaviors/content_editable.js.coffee":44,"./parts.js.coffee":63}],62:[function(require,module,exports){
-var ContentEditable, Marionette, Part, QuestionsView,
+},{"../behaviors/content_editable.js.coffee":45,"./parts.js.coffee":66}],65:[function(require,module,exports){
+var Actionable, ContentEditable, Deleteable, Marionette, Part, QuestionsView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -17207,6 +17417,10 @@ Marionette = (window.Marionette);
 QuestionsView = require('./questions.js.coffee');
 
 ContentEditable = require('../behaviors/content_editable.js.coffee');
+
+Actionable = require('../behaviors/actionable.js.coffee');
+
+Deleteable = require('../behaviors/deleteable.js.coffee');
 
 Part = (function(_super) {
   __extends(Part, _super);
@@ -17227,7 +17441,8 @@ Part = (function(_super) {
 
   Part.prototype.regions = {
     content: '.js-part-background-container',
-    questions: '.js-part-questions-container'
+    questions: '.js-part-questions-container',
+    actions: '.js-part-actions-container'
   };
 
   Part.prototype.triggers = {
@@ -17238,6 +17453,12 @@ Part = (function(_super) {
     var self;
     self = this;
     return {
+      Deleteable: {
+        behaviorClass: Deleteable
+      },
+      Actionable: {
+        behaviorClass: Actionable
+      },
       ContentEditable: {
         behaviorClass: ContentEditable,
         prompts: {
@@ -17275,7 +17496,7 @@ Part = (function(_super) {
 module.exports = Part;
 
 
-},{"../behaviors/content_editable.js.coffee":44,"./questions.js.coffee":67}],63:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":44,"../behaviors/content_editable.js.coffee":45,"../behaviors/deleteable.js.coffee":46,"./questions.js.coffee":70}],66:[function(require,module,exports){
 var Marionette, PartView, Parts,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17305,6 +17526,10 @@ Parts = (function(_super) {
     });
   };
 
+  Parts.prototype.onRemoveChild = function() {
+    return this.triggerMethod('children:changed');
+  };
+
   Parts.prototype.onAddChild = function(child) {
     child.triggerMethod('show');
     return this.triggerMethod('children:changed');
@@ -17317,7 +17542,7 @@ Parts = (function(_super) {
 module.exports = Parts;
 
 
-},{"./part.js.coffee":62}],64:[function(require,module,exports){
+},{"./part.js.coffee":65}],67:[function(require,module,exports){
 var Marionette, Prompter,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17362,7 +17587,7 @@ Prompter = (function(_super) {
 module.exports = Prompter;
 
 
-},{}],65:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var Marionette, QuantifierChoice,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17376,7 +17601,7 @@ QuantifierChoice = (function(_super) {
     return QuantifierChoice.__super__.constructor.apply(this, arguments);
   }
 
-  QuantifierChoice.prototype.className = 'quantifier-choice-container';
+  QuantifierChoice.prototype.className = 'quantifier-choice-container viewer';
 
   QuantifierChoice.prototype.template = '#quantifier-choice-template';
 
@@ -17387,8 +17612,8 @@ QuantifierChoice = (function(_super) {
 module.exports = QuantifierChoice;
 
 
-},{}],66:[function(require,module,exports){
-var $, ChoicesView, ContentEditable, Marionette, Question,
+},{}],69:[function(require,module,exports){
+var $, Actionable, ChoicesView, ContentEditable, Deleteable, Marionette, Question,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -17397,6 +17622,10 @@ Marionette = (window.Marionette);
 ChoicesView = require('./choices.js.coffee');
 
 ContentEditable = require('../behaviors/content_editable.js.coffee');
+
+Actionable = require('../behaviors/actionable.js.coffee');
+
+Deleteable = require('../behaviors/deleteable.js.coffee');
 
 $ = (window.$);
 
@@ -17419,7 +17648,8 @@ Question = (function(_super) {
 
   Question.prototype.regions = {
     content: '.js-question-stem-container',
-    choices: '.js-question-choices-container'
+    choices: '.js-question-choices-container',
+    actions: '.js-question-actions-container'
   };
 
   Question.prototype.events = {
@@ -17433,6 +17663,12 @@ Question = (function(_super) {
     var self;
     self = this;
     return {
+      Deleteable: {
+        behaviorClass: Deleteable
+      },
+      Actionable: {
+        behaviorClass: Actionable
+      },
       ContentEditable: {
         behaviorClass: ContentEditable,
         prompts: {
@@ -17481,7 +17717,7 @@ Question = (function(_super) {
 module.exports = Question;
 
 
-},{"../behaviors/content_editable.js.coffee":44,"./choices.js.coffee":55}],67:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":44,"../behaviors/content_editable.js.coffee":45,"../behaviors/deleteable.js.coffee":46,"./choices.js.coffee":58}],70:[function(require,module,exports){
 var Marionette, QuestionView, Questions,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17520,7 +17756,7 @@ Questions = (function(_super) {
 module.exports = Questions;
 
 
-},{"./question.js.coffee":66}],68:[function(require,module,exports){
+},{"./question.js.coffee":69}],71:[function(require,module,exports){
 var ContentEditable, Marionette, SimpleChoice,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17573,7 +17809,7 @@ SimpleChoice = (function(_super) {
 module.exports = SimpleChoice;
 
 
-},{"../behaviors/content_editable.js.coffee":44}],69:[function(require,module,exports){
+},{"../behaviors/content_editable.js.coffee":45}],72:[function(require,module,exports){
 var Marionette, Viewer,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
