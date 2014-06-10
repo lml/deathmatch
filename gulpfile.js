@@ -41,7 +41,14 @@ gulp.task('clean', function() {
     return gulp.src([
             folders.dest + '/assets/css',
             folders.dest + '/assets/js',
-            folders.dest + '/assets/images', folders.dest
+            folders.dest + '/assets/images',
+            folders.dest + '/marionette/assets/css',
+            folders.dest + '/marionette/assets/js',
+            folders.dest + '/marionette/assets/images',
+            folders.dest + '/react/assets/css',
+            folders.dest + '/react/assets/js',
+            folders.dest + '/react/assets/images',
+            folders.dest
         ], {
             read: false
         })
@@ -96,33 +103,108 @@ function marionetteApp(config) {
     bundle();
 }
 
+function reactLib(config) {
+    var bower = wiredep({
+        exclude: [/backbone.babysitter/, /backbone.wreqr/, /marionette/]
+    });
+    gulp.src(bower.js)
+        .pipe(concat('lib.js'))
+        .pipe(gulp.dest(folders.dest + '/react/assets/js'));
+}
+
+function reactApp(config) {
+    var xify = config.live ? watchify : browserify;
+    var bundler = xify({
+        entries: ['./' + folders.src + '/react/assets/js/app.coffee'],
+        extensions: ['.js', '.coffee']
+    });
+    var bundle = function() {
+        bundler
+            .bundle({
+                debug: config.dev
+            })
+            .on('error', handleErrors("Browserify error"))
+            .pipe(vsource('app.js'))
+            .pipe(vtrans(function() {
+                return exorcist(folders.dest + '/react/assets/js/app.map');
+            }))
+            .pipe(gulp.dest(folders.dest + '/react/assets/js'));
+    };
+    if (config.live) {
+        bundler.on('update', bundle);
+    }
+    bundle();
+}
+
 var sourcePaths = {
-    html: folders.src + '/marionette/index.html',
-    css: folders.src + '/marionette/assets/css/*.css',
-    stylus: folders.src + '/marionette/assets/css/main.styl'
+    common: {
+        html: folders.src + '/*.html',
+        css: folders.src + '/common/assets/css/*.css',
+        stylus: folders.src + '/common/assets/css/*.styl'
+    },
+    marionette: {
+        html: folders.src + '/marionette/index.html',
+        css: folders.src + '/marionette/assets/css/*.css',
+        stylus: folders.src + '/marionette/assets/css/main.styl'
+    },
+    react: {
+        html: folders.src + '/react/index.html',
+        css: folders.src + '/react/assets/css/*.css',
+        stylus: folders.src + '/react/assets/css/main.styl'
+    }
 };
 
 function runHTML(config) {
-    gulp.src(sourcePaths.html)
-        .pipe(gulp.dest(folders.dest + '/marionette'));
+  var html = function(part) {
+    var dest = folders.dest;
+    if (part !== 'common') {
+      dest = dest + '/' + part;
+    }
+    dest = dest + '/';
+    gulp.src(sourcePaths[part].html)
+        .pipe(gulp.dest(dest));
+  };
+  html('common');
+  html('marionette');
+  html('react');
 }
 
 function runCSS(config) {
-    gulp.src(sourcePaths.css)
-        .pipe(gulp.dest(folders.dest + '/marionette/assets/css'));
+  var css = function(part) {
+    var dest = folders.dest;
+    if (part !== 'common') {
+      dest = dest + '/' + part;
+    }
+    dest = dest + '/assets/css';
+    gulp.src(sourcePaths[part].css)
+        .pipe(gulp.dest(dest));
+  };
+  css('common');
+  css('marionette');
+  css('react');
 }
 
 function runStylus(config) {
-    gulp.src(sourcePaths.stylus)
-        .pipe(plumber())
-        .pipe(stylus({
-            errors: config.dev,
-            compress: !config.dev,
-            use: [nib()],
-            import: ['nib']
-        }))
-        .on("error", handleErrors("Stylus Error"))
-        .pipe(gulp.dest(folders.dest + '/marionette/assets/css'));
+  var styl = function(part) {
+    var dest = folders.dest;
+    if (part !== 'common') {
+      dest = dest + '/' + part;
+    }
+    dest = dest + '/assets/css';
+    gulp.src(sourcePaths[part].stylus)
+    .pipe(plumber())
+    .pipe(stylus({
+        errors: config.dev,
+        compress: !config.dev,
+        use: [nib()],
+        import: ['nib']
+    }))
+    .on("error", handleErrors("Stylus Error"))
+    .pipe(gulp.dest(dest));
+  };
+  styl('common');
+  styl('marionette');
+  styl('react');
 }
 
 function handleErrors(title) {
@@ -144,6 +226,8 @@ function handleErrors(title) {
 function build(config) {
     marionetteLib(config);
     marionetteApp(config);
+    reactLib(config);
+    reactApp(config);
     runStylus(config);
     runHTML(config);
     runCSS(config);

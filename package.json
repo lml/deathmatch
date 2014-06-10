@@ -7,7 +7,7 @@
   "license": "BSD3",
   "browserify": {
     "transform": [
-      "coffeeify",
+      "cjsxify",
       "browserify-global-shim"
     ]
   },
@@ -19,8 +19,7 @@
     "backbone-faux-server": "fauxServer",
     "backbone.wreqr": "global:Backbone.Wreqr",
     "marionette": "Marionette",
-    "backbone_associations": "Backbone.AssociatedModel",
-    "react": "React"
+    "backbone_associations": "Backbone.AssociatedModel"
   },
   "devDependencies": {
     "bower": "",
@@ -51,12 +50,15 @@
     "gulp-clean": "",
     "gulp-inject": "",
     "gulp-size": "",
+    "cjsxify": "",
     "streamqueue": "",
     "vinyl-source-stream": "",
     "vinyl-transform": "",
     "quilljs": "",
     "serve-static": "",
-    "wiredep": ""
+    "wiredep": "",
+    "react": "",
+    "react-addons": ""
   },
   "browser": {
     "underscore": "./bower_components/underscore/underscore.js",
@@ -65,7 +67,6 @@
     "backbone.wreqr": "./bower_components/backbone.wreqr/lib/backbone.wreqr.js",
     "jquery": "./bower_components/jquery/dist/jquery.js",
     "marionette": "./bower_components/marionette/lib/core/backbone.marionette.js",
-    "backbone-associations": "./bower_components/backbone-associations/backbone-associations.js",
-    "react": "./bower_components/react/react.js"
+    "backbone-associations": "./bower_components/backbone-associations/backbone-associations.js"
   }
 }
