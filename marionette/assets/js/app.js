@@ -16044,17 +16044,754 @@ module.exports={
 }
 
 },{}],43:[function(require,module,exports){
+var AssociatedCollection, Backbone,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+(window.Backbone.AssociatedModel);
+
+AssociatedCollection = (function(_super) {
+  __extends(AssociatedCollection, _super);
+
+  function AssociatedCollection() {
+    return AssociatedCollection.__super__.constructor.apply(this, arguments);
+  }
+
+  AssociatedCollection.prototype.owner = function() {
+    if ((this.parents != null) && (this.parents[0] != null)) {
+      return this.parents[0];
+    }
+  };
+
+  AssociatedCollection.prototype.resourceName = function() {
+    return this.constructor.name.toLowerCase();
+  };
+
+  AssociatedCollection.prototype.url = function() {
+    var owner;
+    owner = this.owner();
+    if (owner) {
+      return "" + (owner.url()) + "/" + (this.resourceName());
+    }
+  };
+
+  return AssociatedCollection;
+
+})(Backbone.Collection);
+
+module.exports = AssociatedCollection;
+
+
+},{}],44:[function(require,module,exports){
+var Backbone, Choice, _,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+(window.Backbone.AssociatedModel);
+
+_ = (window._);
+
+Choice = (function(_super) {
+  __extends(Choice, _super);
+
+  function Choice() {
+    return Choice.__super__.constructor.apply(this, arguments);
+  }
+
+  Choice.prototype.question = function() {
+    return this.collection.owner();
+  };
+
+  Choice.prototype.position = function() {
+    return this.get('position');
+  };
+
+  Choice.prototype.letter = function() {
+    return String.fromCharCode(97 + this.position());
+  };
+
+  Choice.prototype.canMoveUp = function() {
+    return this.type() === 'simple' && this.position() > 0;
+  };
+
+  Choice.prototype.canMoveDown = function() {
+    var isBottom, isLastSimpleChoice;
+    isBottom = (function(_this) {
+      return function() {
+        return _this.position() === _this.collection.length - 1;
+      };
+    })(this);
+    isLastSimpleChoice = (function(_this) {
+      return function() {
+        return _this.collection.at(_this.position() + 1).type() !== 'simple';
+      };
+    })(this);
+    return this.type() === 'simple' && !(isBottom() || isLastSimpleChoice());
+  };
+
+  Choice.prototype.type = function() {
+    return this.get('type');
+  };
+
+  Choice.prototype.weight = function() {
+    switch (this.type()) {
+      case 'simple':
+        return -100 + this.position();
+      case 'all':
+        return 500;
+      case 'none':
+        return 10000;
+      default:
+        return this.get('combos').length;
+    }
+  };
+
+  Choice.prototype.compare = function(other) {
+    var leftWins, res, result, rightWins, simple_compare, tied, _ref;
+    leftWins = -1;
+    rightWins = 1;
+    tied = 0;
+    simple_compare = function(l, r) {
+      switch (false) {
+        case l !== r:
+          return tied;
+        case !(l < r):
+          return leftWins;
+        default:
+          return rightWins;
+      }
+    };
+    result = simple_compare(this.weight(), other.weight());
+    if (result === tied && (this.type() === (_ref = other.type()) && _ref === 'combo')) {
+      res = _.find(_.zip(this.combos(), other.combos()), function(_arg) {
+        var l, r;
+        l = _arg[0], r = _arg[1];
+        return l.compare(r) !== tied;
+      });
+      if (res) {
+        return res[0].compare(res[1]);
+      } else {
+        return tied;
+      }
+    } else {
+      return result;
+    }
+  };
+
+  Choice.prototype.setSelections = function(ids) {
+    if (this.type() === 'combo') {
+      return this.set({
+        'combos': ids
+      });
+    }
+  };
+
+  Choice.prototype.selections = function() {
+    var combos, selected, simple, simples, statuses, _i, _len, _results;
+    if (this.type() === 'combo') {
+      simples = this.collection.filter((function(_this) {
+        return function(c) {
+          return c.type() === 'simple';
+        };
+      })(this));
+      combos = this.get('combos');
+      selected = function(simple) {
+        return _.contains(combos, simple.get('id'));
+      };
+      statuses = {};
+      _results = [];
+      for (_i = 0, _len = simples.length; _i < _len; _i++) {
+        simple = simples[_i];
+        _results.push([simple, selected(simple)]);
+      }
+      return _results;
+    }
+  };
+
+  Choice.prototype.combos = function() {
+    var selections;
+    if (this.type() === 'combo') {
+      selections = this.get('combos').map((function(_this) {
+        return function(csc) {
+          return _this.collection.get(csc);
+        };
+      })(this));
+      return _.sortBy(selections, function(sc) {
+        return sc.position();
+      });
+    }
+  };
+
+  Choice.prototype.moveUp = function() {
+    var idx;
+    if (this.canMoveUp()) {
+      idx = this.position();
+    }
+    return this.collection.move(idx, idx - 1);
+  };
+
+  Choice.prototype.moveDown = function() {
+    var idx;
+    if (this.canMoveDown()) {
+      idx = this.position();
+    }
+    return this.collection.move(idx, idx + 1);
+  };
+
+  return Choice;
+
+})(Backbone.AssociatedModel);
+
+module.exports = Choice;
+
+
+},{}],45:[function(require,module,exports){
+var $, AssociatedCollection, Backbone, Choice, Choices, _,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+AssociatedCollection = require('./associated_collection.js.coffee');
+
+Choice = require('./choice.js.coffee');
+
+$ = (window.$);
+
+_ = (window._);
+
+Choices = (function(_super) {
+  __extends(Choices, _super);
+
+  function Choices() {
+    return Choices.__super__.constructor.apply(this, arguments);
+  }
+
+  Choices.prototype.model = Choice;
+
+  Choices.prototype.positionField = 'position';
+
+  Choices.prototype.initialize = function() {
+    return this.listenTo(this, 'add remove sort', this.setPositionsFromIndex);
+  };
+
+  Choices.prototype.comparator = function(left, right) {
+    return left.compare(right);
+  };
+
+  Choices.prototype.savePositions = function(options) {
+    if (options == null) {
+      options = {};
+    }
+    if (this.models.length === 0) {
+      return;
+    }
+    _.defaults(options, {
+      attrs: {
+        order: _.map(this.filter(function(model) {
+          return model.hasChanged;
+        }), function(model) {
+          return {
+            id: model.get('id'),
+            position: model.get(this.positionField)
+          };
+        })
+      }
+    });
+    return this.sync('update', this, options);
+  };
+
+  Choices.prototype.setPositionsFromIndex = function() {
+    return this.each((function(_this) {
+      return function(model, index) {
+        return model.set(_this.positionField, index);
+      };
+    })(this));
+  };
+
+  Choices.prototype.simples = function() {
+    return this.filter(function(c) {
+      return c.type() === 'simple';
+    });
+  };
+
+  Choices.prototype.move = function(from, to) {
+    if (from instanceof Backbone.Model) {
+      from = from.get(this.positionField);
+    }
+    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
+    this.setPositionsFromIndex();
+    this.sort();
+    return this.savePositions({
+      error: (function(_this) {
+        return function() {
+          return alert('sort order could not be saved, please reload this page');
+        };
+      })(this)
+    });
+  };
+
+  return Choices;
+
+})(AssociatedCollection);
+
+module.exports = Choices;
+
+
+},{"./associated_collection.js.coffee":43,"./choice.js.coffee":44}],46:[function(require,module,exports){
+var Backbone, Exercise, Part, Parts,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+(window.Backbone.AssociatedModel);
+
+Part = require('./part.js.coffee');
+
+Parts = require('./parts.js.coffee');
+
+Exercise = (function(_super) {
+  __extends(Exercise, _super);
+
+  function Exercise() {
+    return Exercise.__super__.constructor.apply(this, arguments);
+  }
+
+  Exercise.prototype.urlRoot = '/api/exercises';
+
+  Exercise.prototype.relations = [
+    {
+      type: Backbone.Many,
+      key: 'parts',
+      relatedModel: Part,
+      collectionType: Parts
+    }
+  ];
+
+  Exercise.prototype.defaults = {
+    number: ''
+  };
+
+  return Exercise;
+
+})(Backbone.AssociatedModel);
+
+module.exports = Exercise;
+
+
+},{"./part.js.coffee":47,"./parts.js.coffee":48}],47:[function(require,module,exports){
+var Backbone, Part, Questions,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+(window.Backbone.AssociatedModel);
+
+Questions = require('./questions.js.coffee');
+
+Part = (function(_super) {
+  __extends(Part, _super);
+
+  function Part() {
+    return Part.__super__.constructor.apply(this, arguments);
+  }
+
+  Part.prototype.defaults = {
+    position: -1,
+    credit: -1
+  };
+
+  Part.prototype.relations = [
+    {
+      type: Backbone.Many,
+      key: 'questions',
+      collectionType: Questions
+    }
+  ];
+
+  return Part;
+
+})(Backbone.AssociatedModel);
+
+module.exports = Part;
+
+
+},{"./questions.js.coffee":50}],48:[function(require,module,exports){
+var AssociatedCollection, Part, Parts,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+AssociatedCollection = require('./associated_collection.js.coffee');
+
+Part = require('./part.js.coffee');
+
+Parts = (function(_super) {
+  __extends(Parts, _super);
+
+  function Parts() {
+    return Parts.__super__.constructor.apply(this, arguments);
+  }
+
+  Parts.prototype.model = Part;
+
+  return Parts;
+
+})(AssociatedCollection);
+
+module.exports = Parts;
+
+
+},{"./associated_collection.js.coffee":43,"./part.js.coffee":47}],49:[function(require,module,exports){
+var Backbone, Choices, Question, _,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Backbone = (window.Backbone);
+
+(window.Backbone.AssociatedModel);
+
+Choices = require('./choices.js.coffee');
+
+_ = (window._);
+
+Question = (function(_super) {
+  __extends(Question, _super);
+
+  function Question() {
+    return Question.__super__.constructor.apply(this, arguments);
+  }
+
+  Question.prototype.defaults = {
+    type: 'multiple_choice_question'
+  };
+
+  Question.prototype.counts = function() {
+    var counts;
+    counts = this.get('choices').countBy('type');
+    return _.extend({}, {
+      all: 0,
+      none: 0,
+      simple: 0,
+      combo: 0
+    }, counts);
+  };
+
+  Question.prototype.canAddCombo = function() {
+    var counts, n;
+    counts = this.counts();
+    n = counts.simple;
+    return n >= 2 && counts.combo < (Math.pow(2, n) - (n + 1));
+  };
+
+  Question.prototype.canAddAll = function() {
+    var counts;
+    counts = this.counts();
+    return counts.all === 0 && counts.simple >= 2;
+  };
+
+  Question.prototype.canAddNone = function() {
+    var counts;
+    counts = this.counts();
+    return counts.simple > 1 && counts.none === 0;
+  };
+
+  Question.prototype.relations = [
+    {
+      type: Backbone.Many,
+      key: 'choices',
+      collectionType: Choices
+    }
+  ];
+
+  return Question;
+
+})(Backbone.AssociatedModel);
+
+module.exports = Question;
+
+
+},{"./choices.js.coffee":45}],50:[function(require,module,exports){
+var AssociatedCollection, Question, Questions,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+AssociatedCollection = require('./associated_collection.js.coffee');
+
+Question = require('./question.js.coffee');
+
+Questions = (function(_super) {
+  __extends(Questions, _super);
+
+  function Questions() {
+    return Questions.__super__.constructor.apply(this, arguments);
+  }
+
+  Questions.prototype.model = Question;
+
+  return Questions;
+
+})(AssociatedCollection);
+
+module.exports = Questions;
+
+
+},{"./associated_collection.js.coffee":43,"./question.js.coffee":49}],51:[function(require,module,exports){
+var fauxServer = (window.fauxServer);
+var _ = (window._);
+
+// The deathmatch namespace.
+var deathMatch = deathMatch || {};
+
+deathMatch.stub = function() {
+    var self = this;
+
+    function updateAttributes(from, to, atts) {
+        _.each(atts, function(att) {
+            var res = _.result(from, att);
+            if (res) {
+                to[att] = res;
+            }
+        });
+    };
+
+    self.maxIds = {
+        exercise: 1,
+        part: 0,
+        question: 0,
+        choice: 0
+    };
+
+    self.exercise = {
+        background: "",
+        parts: []
+    };
+
+    self.find = function(coll, id) {
+        id = parseInt(id);
+        return _.findWhere(coll, {
+            id: id
+        });
+    };
+
+    self.findPart = function(exerciseId, partId) {
+        return self.find(exercise.parts, partId);
+    };
+
+    self.findQuestion = function(exerciseId, partId, questionId) {
+        var part = self.findPart(exerciseId, partId);
+        return self.find(part.questions, questionId);
+    };
+
+    self.findChoice = function(exerciseId, partId, questionId, choiceId) {
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        return self.find(question.choices, choiceId);
+    };
+
+    self.update = function(exerciseId, data) {
+        self.exercise.background = data.background;
+        return self.exercise;
+    };
+
+    self.addPart = function(exerciseId, data) {
+        self.maxIds.part += 1;
+        data.id = self.maxIds.part;
+        data.background = "";
+        data.position = self.exercise.parts.length;
+        data.questions = [];
+        self.exercise.parts.push(data);
+        return data;
+    };
+
+    self.updatePart = function(exerciseId, partId, data) {
+        var part = self.findPart(exerciseId, partId);
+        updateAttributes(data, part, ['background', 'questions']);
+        return part;
+    };
+
+    self.removePart = function(exerciseId, partId) {
+        var parts = self.exercise.parts;
+        var part = self.findPart(exerciseId, partId);
+        var index = parts.indexOf(part);
+        if (index >= 0) {
+            parts.splice(index, 1);
+        }
+        return {
+            success: true
+        };
+    };
+
+    self.addQuestion = function(exerciseId, partId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        self.maxIds.question += 1;
+        data.id = self.maxIds.question;
+        data.position = questions.length;
+        data.stem = "";
+        data.choices = [];
+        questions.push(data);
+        return data;
+    };
+
+    self.updateQuestion = function(exerciseId, partId, questionId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        updateAttributes(data, question, ['stem', 'choices']);
+        return question;
+    };
+
+    self.removeQuestion = function(exerciseId, partId, questionId) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var index = questions.indexOf(question);
+        if (index >= 0) {
+            questions.splice(index, 1);
+        }
+        return {
+            success: true
+        };
+    };
+
+    self.updateChoices = function(exerciseId, partId, questionId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        if (data.order) {
+          _.each(choices, function (choice) {
+              choice.position = data.order[choice.id];
+          });
+          return {success: true};
+        } else {
+            return {success: false};
+        }
+    };
+
+    self.addChoice = function(exerciseId, partId, questionId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        self.maxIds.choice += 1;
+        data.id = self.maxIds.choice;
+        data.position = choices.length;
+        data.content = "";
+        data.combos = [];
+        choices.push(data);
+        return data;
+    };
+
+    self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
+        updateAttributes(data, choice, ['position', 'content', 'combos']);
+        return choice;
+    };
+
+    self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
+        var index = choices.indexOf(choice);
+        if (index >= 0) {
+            choices.splice(index, 1);
+        }
+        return {
+            succes: true
+        };
+    };
+
+    return {
+        exercise: {
+            parts: self.exercise.parts,
+            update: self.update,
+            addPart: self.addPart,
+            updatePart: self.updatePart,
+            removePart: self.removePart,
+            addQuestion: self.addQuestion,
+            updateQuestion: self.updateQuestion,
+            removeQuestion: self.removeQuestion,
+            addChoice: self.addChoice,
+            updateChoice: self.updateChoice,
+            removeChoice: self.removeChoice
+        }
+    };
+};
+
+var exercise = deathMatch.stub().exercise;
+
+fauxServer
+    .put("/api/exercises/:exerciseId",
+        function(context, exerciseId) {
+            return exercise.update(exerciseId, context.data);
+        })
+    .post("/api/exercises/:exerciseId/parts",
+        function(context, exerciseId) {
+            return exercise.addPart(exerciseId, context.data);
+        })
+    .put("/api/exercises/:exerciseId/parts/:partId",
+        function(context, exerciseId, partId) {
+            return exercise.updatePart(exerciseId, partId, context.data);
+        })
+    .del("/api/exercises/:exerciseId/parts/:partId",
+        function(context, exerciseId, partId) {
+            return exercise.removePart(exerciseId, partId);
+        })
+    .post("/api/exercises/:exerciseId/parts/:partId/questions",
+        function(context, exerciseId, partId) {
+            return exercise.addQuestion(exerciseId, partId, context.data);
+        })
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.updateQuestion(exerciseId, partId, questionId, context.data);
+        })
+    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.removeQuestion(exerciseId, partId, questionId);
+        })
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.updateChoices(exerciseId, partId, questionId, context.data);
+        })
+    .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.addChoice(exerciseId, partId, questionId, context.data);
+        })
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
+        function(context, exerciseId, partId, questionId, choiceId) {
+            return exercise.updateChoice(exerciseId, partId, questionId, choiceId, context.data);
+        })
+    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
+        function(context, exerciseId, partId, questionId, choiceId) {
+            return exercise.removeChoice(exerciseId, partId, questionId, choiceId);
+        });
+
+fauxServer.enable();
+
+},{}],52:[function(require,module,exports){
 var ExerciseEditor, ExerciseModel, ExerciseView, Marionette, PartsCollection;
 
 Marionette = (window.Marionette);
 
-ExerciseModel = require('./entities/exercise.js.coffee');
+ExerciseModel = require('../../../common/assets/js/entities/exercise.js.coffee');
 
 ExerciseView = require('./views/exercise.js.coffee');
 
-PartsCollection = require('./entities/parts.js.coffee');
+PartsCollection = require('../../../common/assets/js/entities/parts.js.coffee');
 
-require('./stubs/api.js');
+require('../../../common/assets/js/stubs/api.js');
 
 ExerciseEditor = new Marionette.Application;
 
@@ -16079,7 +16816,7 @@ ExerciseEditor.on("start", function() {
 ExerciseEditor.start();
 
 
-},{"./entities/exercise.js.coffee":50,"./entities/parts.js.coffee":52,"./stubs/api.js":55,"./views/exercise.js.coffee":64}],44:[function(require,module,exports){
+},{"../../../common/assets/js/entities/exercise.js.coffee":46,"../../../common/assets/js/entities/parts.js.coffee":48,"../../../common/assets/js/stubs/api.js":51,"./views/exercise.js.coffee":64}],53:[function(require,module,exports){
 var Actionable, ActionsView, Marionette, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16129,7 +16866,7 @@ Actionable = (function(_super) {
 module.exports = Actionable;
 
 
-},{"../views/actions.js.coffee":56}],45:[function(require,module,exports){
+},{"../views/actions.js.coffee":56}],54:[function(require,module,exports){
 var $, ContentEditable, ContentView, Marionette, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16255,7 +16992,7 @@ ContentEditable = (function(_super) {
 module.exports = ContentEditable;
 
 
-},{"../views/content.js.coffee":62}],46:[function(require,module,exports){
+},{"../views/content.js.coffee":62}],55:[function(require,module,exports){
 var Deletable, Marionette,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -16287,695 +17024,6 @@ Deletable = (function(_super) {
 
 module.exports = Deletable;
 
-
-},{}],47:[function(require,module,exports){
-var AssociatedCollection, Backbone,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-(window.Backbone.AssociatedModel);
-
-AssociatedCollection = (function(_super) {
-  __extends(AssociatedCollection, _super);
-
-  function AssociatedCollection() {
-    return AssociatedCollection.__super__.constructor.apply(this, arguments);
-  }
-
-  AssociatedCollection.prototype.owner = function() {
-    if ((this.parents != null) && (this.parents[0] != null)) {
-      return this.parents[0];
-    }
-  };
-
-  AssociatedCollection.prototype.resourceName = function() {
-    return this.constructor.name.toLowerCase();
-  };
-
-  AssociatedCollection.prototype.url = function() {
-    var owner;
-    owner = this.owner();
-    if (owner) {
-      return "" + (owner.url()) + "/" + (this.resourceName());
-    }
-  };
-
-  return AssociatedCollection;
-
-})(Backbone.Collection);
-
-module.exports = AssociatedCollection;
-
-
-},{}],48:[function(require,module,exports){
-var Backbone, Choice, _,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-(window.Backbone.AssociatedModel);
-
-_ = (window._);
-
-Choice = (function(_super) {
-  __extends(Choice, _super);
-
-  function Choice() {
-    return Choice.__super__.constructor.apply(this, arguments);
-  }
-
-  Choice.prototype.relations = [
-    {
-      type: Backbone.Many,
-      key: 'combos',
-      relatedModel: Choice
-    }
-  ];
-
-  Choice.prototype.question = function() {
-    return this.collection.owner();
-  };
-
-  Choice.prototype.position = function() {
-    return this.get('position');
-  };
-
-  Choice.prototype.letter = function() {
-    return String.fromCharCode(97 + this.position());
-  };
-
-  Choice.prototype.canMoveUp = function() {
-    return this.type() === 'simple' && this.position() > 0;
-  };
-
-  Choice.prototype.canMoveDown = function() {
-    var isBottom, isLastSimpleChoice;
-    isBottom = (function(_this) {
-      return function() {
-        return _this.position() === _this.collection.length - 1;
-      };
-    })(this);
-    isLastSimpleChoice = (function(_this) {
-      return function() {
-        return _this.collection.at(_this.position() + 1).type() !== 'simple';
-      };
-    })(this);
-    return this.type() === 'simple' && !(isBottom() || isLastSimpleChoice());
-  };
-
-  Choice.prototype.type = function() {
-    return this.get('type');
-  };
-
-  Choice.prototype.weight = function() {
-    switch (this.type()) {
-      case 'simple':
-        return -100 + this.position();
-      case 'all':
-        return 500;
-      case 'none':
-        return 10000;
-      default:
-        return this.get('combos').length;
-    }
-  };
-
-  Choice.prototype.compare = function(other) {
-    var leftWins, res, result, rightWins, simple_compare, tied, _ref;
-    leftWins = -1;
-    rightWins = 1;
-    tied = 0;
-    simple_compare = function(l, r) {
-      switch (false) {
-        case l !== r:
-          return tied;
-        case !(l < r):
-          return leftWins;
-        default:
-          return rightWins;
-      }
-    };
-    result = simple_compare(this.weight(), other.weight());
-    if (result === tied && (this.type() === (_ref = other.type()) && _ref === 'combo')) {
-      res = _.find(_.zip(this.combos(), other.combos()), function(_arg) {
-        var l, r;
-        l = _arg[0], r = _arg[1];
-        return l.compare(r) !== tied;
-      });
-      if (res) {
-        return res[0].compare(res[1]);
-      } else {
-        return tied;
-      }
-    } else {
-      return result;
-    }
-  };
-
-  Choice.prototype.combos = function() {
-    var selections, self;
-    self = this;
-    if (this.type() !== 'simple') {
-      selections = this.get('combos').map(function(csc) {
-        return self.collection.get(csc.get('choice_id'));
-      });
-      return _.sortBy(selections, function(sc) {
-        return sc.position();
-      });
-    }
-  };
-
-  Choice.prototype.moveUp = function() {
-    var idx;
-    if (this.canMoveUp()) {
-      idx = this.position();
-    }
-    return this.collection.move(idx, idx - 1);
-  };
-
-  Choice.prototype.moveDown = function() {
-    var idx;
-    if (this.canMoveDown()) {
-      idx = this.position();
-    }
-    return this.collection.move(idx, idx + 1);
-  };
-
-  return Choice;
-
-})(Backbone.AssociatedModel);
-
-module.exports = Choice;
-
-
-},{}],49:[function(require,module,exports){
-var $, AssociatedCollection, Backbone, Choice, Choices, _,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-AssociatedCollection = require('./associated_collection.js.coffee');
-
-Choice = require('./choice.js.coffee');
-
-$ = (window.$);
-
-_ = (window._);
-
-Choices = (function(_super) {
-  __extends(Choices, _super);
-
-  function Choices() {
-    return Choices.__super__.constructor.apply(this, arguments);
-  }
-
-  Choices.prototype.model = Choice;
-
-  Choices.prototype.positionField = 'position';
-
-  Choices.prototype.initialize = function() {
-    return this.listenTo(this, 'add remove sort', this.setPositionsFromIndex);
-  };
-
-  Choices.prototype.comparator = function(left, right) {
-    return left.compare(right);
-  };
-
-  Choices.prototype.savePositions = function(options) {
-    if (options == null) {
-      options = {};
-    }
-    if (this.models.length === 0) {
-      return;
-    }
-    _.defaults(options, {
-      attrs: {
-        order: _.map(this.filter(function(model) {
-          return model.hasChanged;
-        }), function(model) {
-          return {
-            id: model.get('id'),
-            position: model.get(this.positionField)
-          };
-        })
-      }
-    });
-    return this.sync('update', this, options);
-  };
-
-  Choices.prototype.setPositionsFromIndex = function() {
-    return this.each((function(_this) {
-      return function(model, index) {
-        return model.set(_this.positionField, index);
-      };
-    })(this));
-  };
-
-  Choices.prototype.move = function(from, to) {
-    if (from instanceof Backbone.Model) {
-      from = from.get(this.positionField);
-    }
-    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
-    this.setPositionsFromIndex();
-    this.sort();
-    return this.savePositions({
-      error: (function(_this) {
-        return function() {
-          return alert('sort order could not be saved, please reload this page');
-        };
-      })(this)
-    });
-  };
-
-  return Choices;
-
-})(AssociatedCollection);
-
-module.exports = Choices;
-
-
-},{"./associated_collection.js.coffee":47,"./choice.js.coffee":48}],50:[function(require,module,exports){
-var Backbone, Exercise, Part, Parts,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-(window.Backbone.AssociatedModel);
-
-Part = require('./part.js.coffee');
-
-Parts = require('./parts.js.coffee');
-
-Exercise = (function(_super) {
-  __extends(Exercise, _super);
-
-  function Exercise() {
-    return Exercise.__super__.constructor.apply(this, arguments);
-  }
-
-  Exercise.prototype.urlRoot = '/api/exercises';
-
-  Exercise.prototype.relations = [
-    {
-      type: Backbone.Many,
-      key: 'parts',
-      relatedModel: Part,
-      collectionType: Parts
-    }
-  ];
-
-  Exercise.prototype.defaults = {
-    number: ''
-  };
-
-  return Exercise;
-
-})(Backbone.AssociatedModel);
-
-module.exports = Exercise;
-
-
-},{"./part.js.coffee":51,"./parts.js.coffee":52}],51:[function(require,module,exports){
-var Backbone, Part, Questions,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-(window.Backbone.AssociatedModel);
-
-Questions = require('./questions.js.coffee');
-
-Part = (function(_super) {
-  __extends(Part, _super);
-
-  function Part() {
-    return Part.__super__.constructor.apply(this, arguments);
-  }
-
-  Part.prototype.defaults = {
-    position: -1,
-    credit: -1
-  };
-
-  Part.prototype.relations = [
-    {
-      type: Backbone.Many,
-      key: 'questions',
-      collectionType: Questions
-    }
-  ];
-
-  return Part;
-
-})(Backbone.AssociatedModel);
-
-module.exports = Part;
-
-
-},{"./questions.js.coffee":54}],52:[function(require,module,exports){
-var AssociatedCollection, Part, Parts,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-AssociatedCollection = require('./associated_collection.js.coffee');
-
-Part = require('./part.js.coffee');
-
-Parts = (function(_super) {
-  __extends(Parts, _super);
-
-  function Parts() {
-    return Parts.__super__.constructor.apply(this, arguments);
-  }
-
-  Parts.prototype.model = Part;
-
-  return Parts;
-
-})(AssociatedCollection);
-
-module.exports = Parts;
-
-
-},{"./associated_collection.js.coffee":47,"./part.js.coffee":51}],53:[function(require,module,exports){
-var Backbone, Choices, Question, _,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Backbone = (window.Backbone);
-
-(window.Backbone.AssociatedModel);
-
-Choices = require('./choices.js.coffee');
-
-_ = (window._);
-
-Question = (function(_super) {
-  __extends(Question, _super);
-
-  function Question() {
-    return Question.__super__.constructor.apply(this, arguments);
-  }
-
-  Question.prototype.defaults = {
-    type: 'multiple_choice_question'
-  };
-
-  Question.prototype.counts = function() {
-    var counts;
-    counts = this.get('choices').countBy('type');
-    return _.extend({}, {
-      all: 0,
-      none: 0,
-      simple: 0,
-      combo: 0
-    }, counts);
-  };
-
-  Question.prototype.canAddCombo = function() {
-    var counts, n;
-    counts = this.counts();
-    n = counts.simple;
-    return n >= 2 && counts.combo < (Math.pow(2, n) - (n + 1));
-  };
-
-  Question.prototype.canAddAll = function() {
-    var counts;
-    counts = this.counts();
-    return counts.all === 0 && counts.simple >= 2;
-  };
-
-  Question.prototype.canAddNone = function() {
-    var counts;
-    counts = this.counts();
-    return counts.simple > 1 && counts.none === 0;
-  };
-
-  Question.prototype.relations = [
-    {
-      type: Backbone.Many,
-      key: 'choices',
-      collectionType: Choices
-    }
-  ];
-
-  return Question;
-
-})(Backbone.AssociatedModel);
-
-module.exports = Question;
-
-
-},{"./choices.js.coffee":49}],54:[function(require,module,exports){
-var AssociatedCollection, Question, Questions,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-AssociatedCollection = require('./associated_collection.js.coffee');
-
-Question = require('./question.js.coffee');
-
-Questions = (function(_super) {
-  __extends(Questions, _super);
-
-  function Questions() {
-    return Questions.__super__.constructor.apply(this, arguments);
-  }
-
-  Questions.prototype.model = Question;
-
-  return Questions;
-
-})(AssociatedCollection);
-
-module.exports = Questions;
-
-
-},{"./associated_collection.js.coffee":47,"./question.js.coffee":53}],55:[function(require,module,exports){
-var fauxServer = (window.fauxServer);
-var _ = (window._);
-
-// The deathmatch namespace.
-var deathMatch = deathMatch || {};
-
-deathMatch.stub = function() {
-    var self = this;
-
-    function updateAttributes(from, to, atts) {
-        _.each(atts, function(att) {
-            var res = _.result(from, att);
-            if (res) {
-                to[att] = res;
-            }
-        });
-    };
-
-    self.maxIds = {
-        exercise: 1,
-        part: 0,
-        question: 0,
-        choice: 0
-    };
-
-    self.exercise = {
-        background: "",
-        parts: []
-    };
-
-    self.find = function(coll, id) {
-        id = parseInt(id);
-        return _.findWhere(coll, {
-            id: id
-        });
-    };
-
-    self.findPart = function(exerciseId, partId) {
-        return self.find(exercise.parts, partId);
-    };
-
-    self.findQuestion = function(exerciseId, partId, questionId) {
-        var part = self.findPart(exerciseId, partId);
-        return self.find(part.questions, questionId);
-    };
-
-    self.findChoice = function(exerciseId, partId, questionId, choiceId) {
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        return self.find(question.choices, choiceId);
-    };
-
-    self.update = function(exerciseId, data) {
-        self.exercise.background = data.background;
-        return self.exercise;
-    };
-
-    self.addPart = function(exerciseId, data) {
-        self.maxIds.part += 1;
-        data.id = self.maxIds.part;
-        data.background = "";
-        data.position = self.exercise.parts.length;
-        data.questions = [];
-        self.exercise.parts.push(data);
-        return data;
-    };
-
-    self.updatePart = function(exerciseId, partId, data) {
-        var part = self.findPart(exerciseId, partId);
-        updateAttributes(data, part, ['background', 'questions']);
-        return part;
-    };
-
-    self.removePart = function(exerciseId, partId) {
-        var parts = self.exercise.parts;
-        var part = self.findPart(exerciseId, partId);
-        var index = parts.indexOf(part);
-        if (index >= 0) {
-            parts.splice(index, 1);
-        }
-        return {
-            success: true
-        };
-    };
-
-    self.addQuestion = function(exerciseId, partId, data) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        self.maxIds.question += 1;
-        data.id = self.maxIds.question;
-        data.position = questions.length;
-        data.stem = "";
-        data.choices = [];
-        questions.push(data);
-        return data;
-    };
-
-    self.updateQuestion = function(exerciseId, partId, questionId, data) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        updateAttributes(data, question, ['stem', 'choices']);
-        return question;
-    };
-
-    self.removeQuestion = function(exerciseId, partId, questionId) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        var index = questions.indexOf(question);
-        if (index >= 0) {
-            questions.splice(index, 1);
-        }
-        return {
-            success: true
-        };
-    };
-
-    self.addChoice = function(exerciseId, partId, questionId, data) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        var choices = question.choices;
-        self.maxIds.choice += 1;
-        data.id = self.maxIds.choice;
-        data.position = choices.length;
-        data.content = "";
-        data.combos = [];
-        choices.push(data);
-        return data;
-    };
-
-    self.updateChoice = function(exerciseId, partId, questionId, choiceId, data) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        var choices = question.choices;
-        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
-        updateAttributes(data, choice, ['position', 'content', 'combos']);
-        return choice;
-    };
-
-    self.removeChoice = function(exerciseId, partId, questionId, choiceId) {
-        var part = self.findPart(exerciseId, partId);
-        var questions = part.questions;
-        var question = self.findQuestion(exerciseId, partId, questionId);
-        var choices = question.choices;
-        var choice = self.findChoice(exerciseId, partId, questionId, choiceId);
-        var index = choices.indexOf(choice);
-        if (index >= 0) {
-            choices.splice(index, 1);
-        }
-        return {
-            succes: true
-        };
-    };
-
-    return {
-        exercise: {
-            parts: self.exercise.parts,
-            update: self.update,
-            addPart: self.addPart,
-            updatePart: self.updatePart,
-            removePart: self.removePart,
-            addQuestion: self.addQuestion,
-            updateQuestion: self.updateQuestion,
-            removeQuestion: self.removeQuestion,
-            addChoice: self.addChoice,
-            updateChoice: self.updateChoice,
-            removeChoice: self.removeChoice
-        }
-    };
-};
-
-var exercise = deathMatch.stub().exercise;
-
-fauxServer
-    .put("/api/exercises/:exerciseId",
-        function(context, exerciseId) {
-            return exercise.update(exerciseId, context.data);
-        })
-    .post("/api/exercises/:exerciseId/parts",
-        function(context, exerciseId) {
-            return exercise.addPart(exerciseId, context.data);
-        })
-    .put("/api/exercises/:exerciseId/parts/:partId",
-        function(context, exerciseId, partId) {
-            return exercise.updatePart(exerciseId, partId, context.data);
-        })
-    .del("/api/exercises/:exerciseId/parts/:partId",
-        function(context, exerciseId, partId) {
-            return exercise.removePart(exerciseId, partId);
-        })
-    .post("/api/exercises/:exerciseId/parts/:partId/questions",
-        function(context, exerciseId, partId) {
-            return exercise.addQuestion(exerciseId, partId, context.data);
-        })
-    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId",
-        function(context, exerciseId, partId, questionId) {
-            return exercise.updateQuestion(exerciseId, partId, questionId, context.data);
-        })
-    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId",
-        function(context, exerciseId, partId, questionId) {
-            return exercise.removeQuestion(exerciseId, partId, questionId);
-        })
-    .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
-        function(context, exerciseId, partId, questionId) {
-            return exercise.addChoice(exerciseId, partId, questionId, context.data);
-        })
-    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
-        function(context, exerciseId, partId, questionId, choiceId) {
-            return exercise.updateChoice(exerciseId, partId, questionId, choiceId, context.data);
-        })
-    .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices/:choiceId",
-        function(context, exerciseId, partId, questionId, choiceId) {
-            return exercise.removeChoice(exerciseId, partId, questionId, choiceId);
-        });
-
-fauxServer.enable();
 
 },{}],56:[function(require,module,exports){
 var Actions, Marionette,
@@ -17119,7 +17167,7 @@ Choice = (function(_super) {
 module.exports = Choice;
 
 
-},{"../behaviors/actionable.js.coffee":44,"../behaviors/deleteable.js.coffee":46,"./combo_choice.js.coffee":59,"./quantifier_choice.js.coffee":68,"./simple_choice.js.coffee":71}],58:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":53,"../behaviors/deleteable.js.coffee":55,"./combo_choice.js.coffee":59,"./quantifier_choice.js.coffee":68,"./simple_choice.js.coffee":71}],58:[function(require,module,exports){
 var ChoiceView, Choices, Marionette,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17504,7 +17552,7 @@ Exercise = (function(_super) {
 module.exports = Exercise;
 
 
-},{"../behaviors/content_editable.js.coffee":45,"./parts.js.coffee":66}],65:[function(require,module,exports){
+},{"../behaviors/content_editable.js.coffee":54,"./parts.js.coffee":66}],65:[function(require,module,exports){
 var Actionable, ContentEditable, Deleteable, Marionette, Part, QuestionsView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17593,7 +17641,7 @@ Part = (function(_super) {
 module.exports = Part;
 
 
-},{"../behaviors/actionable.js.coffee":44,"../behaviors/content_editable.js.coffee":45,"../behaviors/deleteable.js.coffee":46,"./questions.js.coffee":70}],66:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":53,"../behaviors/content_editable.js.coffee":54,"../behaviors/deleteable.js.coffee":55,"./questions.js.coffee":70}],66:[function(require,module,exports){
 var Marionette, PartView, Parts,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17841,7 +17889,7 @@ Question = (function(_super) {
 module.exports = Question;
 
 
-},{"../behaviors/actionable.js.coffee":44,"../behaviors/content_editable.js.coffee":45,"../behaviors/deleteable.js.coffee":46,"./choices.js.coffee":58}],70:[function(require,module,exports){
+},{"../behaviors/actionable.js.coffee":53,"../behaviors/content_editable.js.coffee":54,"../behaviors/deleteable.js.coffee":55,"./choices.js.coffee":58}],70:[function(require,module,exports){
 var Marionette, QuestionView, Questions,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17933,7 +17981,7 @@ SimpleChoice = (function(_super) {
 module.exports = SimpleChoice;
 
 
-},{"../behaviors/content_editable.js.coffee":45}],72:[function(require,module,exports){
+},{"../behaviors/content_editable.js.coffee":54}],72:[function(require,module,exports){
 var Marionette, Viewer,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -17968,7 +18016,7 @@ Viewer = (function(_super) {
 module.exports = Viewer;
 
 
-},{}]},{},[43])
+},{}]},{},[52])
 
 
 //# sourceMappingURL=app.js.map

@@ -92,6 +92,9 @@ a img {
 *:focus {
   outline: none;
 }
+.hidden {
+  display: none;
+}
 body {
   background-color: #ededed;
   color: #444;
@@ -131,6 +134,9 @@ article.main {
   width: 95%;
   position: absolute;
 }
+.button-panel button:last-child {
+  margin-right: 12px;
+}
 .has-drawer {
   position: relative;
 }
@@ -154,6 +160,9 @@ article.main {
   padding: 2px 8px;
   margin: 4px 8px;
   display: block;
+}
+.action-panel .action.hidden {
+  display: none;
 }
 .action-panel h4 {
   font-size: 12px;
@@ -318,6 +327,40 @@ ol.letters >li:before {
 }
 .choice-container {
   min-height: 120px;
+}
+.combo-choice-editor {
+  border: 1px solid #ccc;
+  padding-top: 8px;
+  padding-bottom: 76px;
+}
+.combo-choice-editor .button-panel {
+  margin-top: 24px;
+  border-top: 1px solid #ccc;
+  padding: 8px 0;
+}
+.choice-selector-container {
+  cursor: pointer;
+  position: relative;
+  min-height: 24px;
+  margin-bottom: 12px;
+}
+.choice-selector-container input {
+  width: 24px;
+  border: 1px solid #ccc;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.choice-selector-container .choice-letter {
+  position: absolute;
+  left: 32px;
+  top: 0;
+  width: 12px;
+}
+.choice-selector-container .choice-content {
+  position: relative;
+  left: 64px;
+  top: 0;
 }
 .question-container {
   margin: 12px 0;

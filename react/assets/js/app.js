@@ -39430,14 +39430,6 @@ Choice = (function(_super) {
     return Choice.__super__.constructor.apply(this, arguments);
   }
 
-  Choice.prototype.relations = [
-    {
-      type: Backbone.Many,
-      key: 'combos',
-      relatedModel: Choice
-    }
-  ];
-
   Choice.prototype.question = function() {
     return this.collection.owner();
   };
@@ -39518,13 +39510,44 @@ Choice = (function(_super) {
     }
   };
 
-  Choice.prototype.combos = function() {
-    var selections, self;
-    self = this;
-    if (this.type() !== 'simple') {
-      selections = this.get('combos').map(function(csc) {
-        return self.collection.get(csc.get('choice_id'));
+  Choice.prototype.setSelections = function(ids) {
+    if (this.type() === 'combo') {
+      return this.set({
+        'combos': ids
       });
+    }
+  };
+
+  Choice.prototype.selections = function() {
+    var combos, selected, simple, simples, statuses, _i, _len, _results;
+    if (this.type() === 'combo') {
+      simples = this.collection.filter((function(_this) {
+        return function(c) {
+          return c.type() === 'simple';
+        };
+      })(this));
+      combos = this.get('combos');
+      selected = function(simple) {
+        return _.contains(combos, simple.get('id'));
+      };
+      statuses = {};
+      _results = [];
+      for (_i = 0, _len = simples.length; _i < _len; _i++) {
+        simple = simples[_i];
+        _results.push([simple, selected(simple)]);
+      }
+      return _results;
+    }
+  };
+
+  Choice.prototype.combos = function() {
+    var selections;
+    if (this.type() === 'combo') {
+      selections = this.get('combos').map((function(_this) {
+        return function(csc) {
+          return _this.collection.get(csc);
+        };
+      })(this));
       return _.sortBy(selections, function(sc) {
         return sc.position();
       });
@@ -39616,6 +39639,12 @@ Choices = (function(_super) {
         return model.set(_this.positionField, index);
       };
     })(this));
+  };
+
+  Choices.prototype.simples = function() {
+    return this.filter(function(c) {
+      return c.type() === 'simple';
+    });
   };
 
   Choices.prototype.move = function(from, to) {
@@ -39958,6 +39987,21 @@ deathMatch.stub = function() {
         };
     };
 
+    self.updateChoices = function(exerciseId, partId, questionId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        if (data.order) {
+          _.each(choices, function (choice) {
+              choice.position = data.order[choice.id];
+          });
+          return {success: true};
+        } else {
+            return {success: false};
+        }
+    };
+
     self.addChoice = function(exerciseId, partId, questionId, data) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
@@ -40045,6 +40089,10 @@ fauxServer
         function(context, exerciseId, partId, questionId) {
             return exercise.removeQuestion(exerciseId, partId, questionId);
         })
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.updateChoices(exerciseId, partId, questionId, context.data);
+        })
     .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
         function(context, exerciseId, partId, questionId) {
             return exercise.addChoice(exerciseId, partId, questionId, context.data);
@@ -40065,14 +40113,15 @@ var Exercise, ExerciseModel, React, exercise;
 
 React = require('react');
 
-Exercise = require('./components/exercise.coffee');
+Exercise = require('./components/exercise');
 
 ExerciseModel = require('../../../common/assets/js/entities/exercise.js.coffee');
 
 require('../../../common/assets/js/stubs/api.js');
 
 exercise = new ExerciseModel({
-  id: 1
+  id: 1,
+  parts: []
 });
 
 React.renderComponent(Exercise({
@@ -40080,7 +40129,409 @@ React.renderComponent(Exercise({
 }), document.getElementById('exercise-editor'));
 
 
-},{"../../../common/assets/js/entities/exercise.js.coffee":274,"../../../common/assets/js/stubs/api.js":279,"./components/exercise.coffee":282,"react":270}],281:[function(require,module,exports){
+},{"../../../common/assets/js/entities/exercise.js.coffee":274,"../../../common/assets/js/stubs/api.js":279,"./components/exercise":286,"react":270}],281:[function(require,module,exports){
+var ActionButton, React;
+
+React = require('react');
+
+React.Addons = require('react-addons');
+
+ActionButton = React.createClass({
+  getDefaultProps: function() {
+    return {
+      hidden: false,
+      actionText: "",
+      buttonMainClass: "action",
+      buttonTypeClass: "secondary",
+      extraButtonClasses: []
+    };
+  },
+  propTypes: {
+    hidden: React.PropTypes.bool,
+    onAction: React.PropTypes.func.isRequired,
+    actionName: React.PropTypes.string.isRequired,
+    actionText: React.PropTypes.string.isRequired,
+    actionTitle: React.PropTypes.string
+  },
+  handleAction: function() {
+    return this.props.onAction(this.props.actionName);
+  },
+  render: function() {
+    var className, classes, _i, _len, _ref;
+    classes = {
+      hidden: this.props.hidden
+    };
+    classes[this.props.buttonMainClass] = true;
+    classes[this.props.buttonTypeClass] = true;
+    _ref = this.props.extraButtonClasses;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      className = _ref[_i];
+      classes[className] = true;
+    }
+    classes = React.Addons.classSet(classes);
+    return React.DOM.button({
+      "className": classes,
+      "title": this.props.actionTitle,
+      "name": this.props.actionName,
+      "onClick": this.handleAction
+    }, this.props.actionText);
+  }
+});
+
+module.exports = ActionButton;
+
+
+},{"react":270,"react-addons":43}],282:[function(require,module,exports){
+var ActionDrawer, React;
+
+React = require('react');
+
+ActionDrawer = React.createClass({
+  render: function() {
+    return React.DOM.div({
+      "className": "action-panel drawer"
+    }, React.DOM.h4(null, this.props.title), this.props.children);
+  }
+});
+
+module.exports = ActionDrawer;
+
+
+},{"react":270}],283:[function(require,module,exports){
+var AllChoice, Button, Choice, ComboChoice, ComboChoiceEditor, ComboChoiceViewer, Content, Drawer, NoneChoice, React, _,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+React = require('react');
+
+React.addons = require('react-addons');
+
+_ = (window._);
+
+Button = require('./action_button');
+
+Content = require('./content');
+
+Drawer = require('./action_drawer');
+
+ComboChoiceViewer = React.createClass({
+  displayName: 'ComboChoiceViewer',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getDefaultProps: function() {
+    return {
+      onEditComboChoice: function() {
+        debugger;
+      }
+    };
+  },
+  handleEdit: function() {
+    return this.props.onEditComboChoice();
+  },
+  render: function() {
+    var choiceText, combos, txt;
+    combos = this.props.model.combos();
+    choiceText = combos.length > 1 ? (txt = _.map(_.initial(combos), function(c) {
+      return "(" + (c.letter()) + ")";
+    }).join(', '), txt += ' & ', txt += "(" + (_.last(combos).letter()) + ")", txt) : "Invalid selections. Please edit to fix.";
+    return React.DOM.div({
+      "className": "combo-choice-viewer viewer-container hoverable"
+    }, React.DOM.button({
+      "className": "action secondary on-hover",
+      "title": "Edit combo choice",
+      "onClick": this.handleEdit
+    }, "Edit"), React.DOM.div({
+      "className": "viewer"
+    }, choiceText));
+  }
+});
+
+ComboChoiceEditor = React.createClass({
+  displayName: 'ComboChoiceEditor',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getInitialState: function() {
+    return {
+      selections: this.props.model.get('combos')
+    };
+  },
+  getDefaultProps: function() {
+    return {
+      onCancelEdit: function() {
+        debugger;
+      },
+      onSaveChanges: function() {
+        debugger;
+      }
+    };
+  },
+  handleChange: function() {
+    var input, inputs, selections;
+    inputs = this.refs.editor.getDOMNode().getElementsByTagName('input');
+    selections = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = inputs.length; _i < _len; _i++) {
+        input = inputs[_i];
+        if (input.checked === true) {
+          _results.push(parseInt(input.value));
+        }
+      }
+      return _results;
+    })();
+    return this.setState({
+      selections: selections
+    });
+  },
+  handleClick: function(event) {
+    return event.currentTarget.getElementsByTagName('input')[0].checked = true;
+  },
+  handleSave: function() {
+    this.props.model.setSelections(this.state.selections);
+    this.props.model.save;
+    this.props.onSaveChanges();
+    return false;
+  },
+  handleCancel: function() {
+    this.props.onCancelEdit();
+    return false;
+  },
+  render: function() {
+    var choice, inputs, renderCheckbox, selections;
+    selections = this.state.selections;
+    renderCheckbox = (function(_this) {
+      return function(choice) {
+        var _ref;
+        return React.DOM.div({
+          "className": 'choice-selector-container',
+          "onClick": _this.handleClick
+        }, React.DOM.input({
+          "type": 'checkbox',
+          "onChange": _this.handleChange,
+          "value": choice.get('id'),
+          "checked": (_ref = choice.id, __indexOf.call(selections, _ref) >= 0)
+        }), React.DOM.div({
+          "className": "choice-letter"
+        }, "(", choice.letter(), ")"), React.DOM.div({
+          "className": "choice-content",
+          "dangerouslySetInnerHTML": {
+            __html: choice.get('content')
+          }
+        }));
+      };
+    })(this);
+    inputs = (function() {
+      var _i, _len, _ref, _results;
+      _ref = this.props.model.collection.simples();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        choice = _ref[_i];
+        _results.push(renderCheckbox(choice));
+      }
+      return _results;
+    }).call(this);
+    return React.DOM.div({
+      "className": "combo-choice-editor editor",
+      "ref": 'editor'
+    }, React.DOM.form({
+      "className": "combo-choice-editor-form form",
+      "onSubmit": this.handleSave
+    }, inputs, React.DOM.div({
+      "className": "footer button-panel"
+    }, React.DOM.button({
+      "className": "action secondary",
+      "title": "Cancel editing",
+      "onClick": this.handleCancel
+    }, "Cancel"), React.DOM.button({
+      "type": "submit",
+      "className": "action primary",
+      "title": "Done editing"
+    }, "Done"))));
+  }
+});
+
+ComboChoice = React.createClass({
+  displayName: 'ComboChoice',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getInitialState: function() {
+    var combos, mode;
+    combos = this.props.model.get('combos');
+    mode = (combos != null) && combos.length > 1 ? 'view' : 'edit';
+    return {
+      mode: mode
+    };
+  },
+  onEdit: function() {
+    return this.setState({
+      mode: 'edit'
+    });
+  },
+  onCancelEdit: function() {
+    return this.setState({
+      mode: 'view'
+    });
+  },
+  render: function() {
+    if (this.state.mode === 'edit') {
+      return ComboChoiceEditor({
+        "model": this.props.model,
+        "onSaveChanges": this.onCancelEdit,
+        "onCancelEdit": this.onCancelEdit
+      });
+    } else {
+      return ComboChoiceViewer({
+        "model": this.props.model,
+        "onEditComboChoice": this.onEdit
+      });
+    }
+  }
+});
+
+AllChoice = React.createClass({
+  displayName: 'AllChoice',
+  render: function() {
+    return React.DOM.span({
+      "class": "all-choice"
+    }, " All of the above ");
+  }
+});
+
+NoneChoice = React.createClass({
+  displayName: 'NoneChoice',
+  render: function() {
+    return React.DOM.span({
+      "class": "none-choice"
+    }, " None of the above ");
+  }
+});
+
+Choice = React.createClass({
+  displayName: 'Choice',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getStateFromModel: function() {
+    return {
+      content: this.props.model.get('content')
+    };
+  },
+  getInitialState: function() {
+    return this.getStateFromModel();
+  },
+  refreshState: function() {
+    return this.setState(this.getStateFromModel());
+  },
+  componentDidMount: function() {
+    return this.props.model.on('change', this.refreshState, this);
+  },
+  componentWillUnmount: function() {
+    return this.props.model.off('change', this.refreshState, this);
+  },
+  onSaveContent: function(content) {
+    this.props.model.set({
+      content: content
+    });
+    return this.props.model.save();
+  },
+  onDeleteChoice: function() {
+    return this.props.model.destroy({
+      wait: true
+    });
+  },
+  onMoveChoiceUp: function() {
+    return this.props.model.moveUp();
+  },
+  onMoveChoiceDown: function() {
+    return this.props.model.moveDown();
+  },
+  render: function() {
+    var choiceTitle, content, contentNode;
+    content = this.state.content;
+    choiceTitle = "Choice (" + (this.props.model.letter()) + ")";
+    contentNode = (function() {
+      switch (this.props.model.type()) {
+        case 'simple':
+          return Content({
+            "prompt_add": "Click to add choice content.",
+            "prompt_edit": "Click to edit choice.",
+            "content": content,
+            "onSaveContent": this.onSaveContent
+          });
+        case 'combo':
+          return ComboChoice({
+            "model": this.props.model
+          });
+        case 'all':
+          return AllChoice(null);
+        case 'none':
+          return NoneChoice(null);
+        default:
+          return console.log('Invalid choice type');
+      }
+    }).call(this);
+    return React.DOM.li({
+      "className": "choice-container has-drawer"
+    }, contentNode, Drawer({
+      "title": choiceTitle
+    }, Button({
+      "hidden": !this.props.model.canMoveUp(),
+      "actionTitle": "Move choice up",
+      "actionText": "Move up",
+      "actionName": "MoveUp",
+      "onAction": this.onMoveChoiceUp
+    }), Button({
+      "hidden": !this.props.model.canMoveDown(),
+      "actionTitle": "Move choice down",
+      "actionText": "Move down",
+      "actionName": "MoveDown",
+      "onAction": this.onMoveChoiceDown
+    }), Button({
+      "actionTitle": "Delete this choice",
+      "actionText": "Delete choice",
+      "actionName": "DeleteChoice",
+      "onAction": this.onDeleteChoice
+    })));
+  }
+});
+
+module.exports = Choice;
+
+
+},{"./action_button":281,"./action_drawer":282,"./content":285,"react":270,"react-addons":43}],284:[function(require,module,exports){
+var Choice, ChoiceList, React;
+
+React = require('react');
+
+React.Addons = require('react-addons');
+
+Choice = require('./choice');
+
+ChoiceList = React.createClass({
+  displayName: 'ChoiceList',
+  propTypes: {
+    collection: React.PropTypes.object.isRequired
+  },
+  render: function() {
+    var choices;
+    choices = this.props.collection.map(function(model) {
+      return Choice({
+        "key": model.id,
+        "model": model
+      });
+    });
+    return React.DOM.ol({
+      "className": "letters"
+    }, choices);
+  }
+});
+
+module.exports = ChoiceList;
+
+
+},{"./choice":283,"react":270,"react-addons":43}],285:[function(require,module,exports){
 var Content, Editor, Quill, React, Viewer;
 
 React = require('react');
@@ -40105,7 +40556,7 @@ Viewer = React.createClass({
     return this.props.onEditContent();
   },
   render: function() {
-    if (this.props.content != null) {
+    if ((this.props.content != null) && this.props.content !== "") {
       return React.DOM.div({
         "className": "viewer-container hoverable"
       }, React.DOM.button({
@@ -40283,7 +40734,7 @@ Content = React.createClass({
   },
   render: function() {
     var classes, hasContent;
-    hasContent = this.props.content != null;
+    hasContent = (this.props.content != null) && this.props.content !== "";
     classes = React.addons.classSet({
       'content-container': true,
       'mode-edit': this.state.mode === 'edit',
@@ -40309,51 +40760,346 @@ Content = React.createClass({
 module.exports = Content;
 
 
-},{"quilljs":2,"react":270,"react-addons":43}],282:[function(require,module,exports){
-var Content, Exercise, React;
+},{"quilljs":2,"react":270,"react-addons":43}],286:[function(require,module,exports){
+var Button, Content, Drawer, Exercise, PartList, React;
 
 React = require('react');
 
-Content = require('./content.coffee');
+React.Addons = require('react-addons');
+
+Button = require('./action_button');
+
+Content = require('./content');
+
+Drawer = require('./action_drawer');
+
+PartList = require('./part_list');
 
 Exercise = React.createClass({
+  displayName: 'Exercise',
   propTypes: {
     model: React.PropTypes.object.isRequired
   },
   getStateFromModel: function() {
     return {
-      content: this.props.model.get('background')
+      content: this.props.model.get('background'),
+      parts: this.props.model.get('parts')
     };
   },
   getInitialState: function() {
     return this.getStateFromModel();
   },
+  refreshState: function() {
+    return this.setState(this.getStateFromModel());
+  },
+  componentDidMount: function() {
+    this.props.model.on('change', this.refreshState, this);
+    return this.state.parts.on('add remove change', this.refreshState, this);
+  },
+  componentWillUnmount: function() {
+    this.props.model.off('change', this.refreshState, this);
+    return this.state.parts.off('add remove change', this.refreshState, this);
+  },
   onSaveBackground: function(content) {
     this.props.model.set({
       background: content
     });
-    return this.props.model.save().done((function(_this) {
-      return function() {
-        return _this.setState(_this.getStateFromModel());
-      };
-    })(this));
+    return this.props.model.save();
+  },
+  onAddPart: function() {
+    return this.state.parts.create({}, {
+      wait: true
+    });
   },
   render: function() {
     var content;
     content = this.state.content;
-    return Content({
+    return React.DOM.div({
+      "className": "exercise-container has-drawer"
+    }, Content({
       "prompt_add": "Click to add background information for the entire exercise.",
       "prompt_edit": "Click to edit the background information for the entire exercise.",
       "content": content,
       "onSaveContent": this.onSaveBackground
-    });
+    }), PartList({
+      "collection": this.state.parts
+    }), Drawer({
+      "title": "Exercise"
+    }, Button({
+      "actionTitle": "Add a new part",
+      "actionText": "Add part",
+      "actionName": "AddPart",
+      "onAction": this.onAddPart
+    })));
   }
 });
 
 module.exports = Exercise;
 
 
-},{"./content.coffee":281,"react":270}]},{},[280])
+},{"./action_button":281,"./action_drawer":282,"./content":285,"./part_list":288,"react":270,"react-addons":43}],287:[function(require,module,exports){
+var Button, Content, Drawer, Part, QuestionList, React;
+
+React = require('react');
+
+React.addons = require('react-addons');
+
+Button = require('./action_button');
+
+Content = require('./content');
+
+Drawer = require('./action_drawer');
+
+QuestionList = require('./question_list');
+
+Part = React.createClass({
+  displayName: 'Part',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getStateFromModel: function() {
+    return {
+      content: this.props.model.get('background'),
+      questions: this.props.model.get('questions')
+    };
+  },
+  getInitialState: function() {
+    return this.getStateFromModel();
+  },
+  refreshState: function() {
+    return this.setState(this.getStateFromModel());
+  },
+  componentDidMount: function() {
+    this.props.model.on('change', this.refreshState, this);
+    return this.state.questions.on('add remove change', this.refreshState, this);
+  },
+  componentWillUnmount: function() {
+    this.props.model.off('change', this.refreshState, this);
+    return this.state.questions.off('add remove change', this.refreshState, this);
+  },
+  onSaveBackground: function(content) {
+    this.props.model.set({
+      background: content
+    });
+    return this.props.model.save();
+  },
+  onDeletePart: function() {
+    return this.props.model.destroy({
+      wait: true
+    });
+  },
+  onAddQuestion: function() {
+    return this.state.questions.create({}, {
+      wait: true
+    });
+  },
+  render: function() {
+    var content, partIndex, partTitle;
+    content = this.state.content;
+    partIndex = this.props.model.collection.indexOf(this.props.model) + 1;
+    partTitle = "Part " + partIndex;
+    return React.DOM.li({
+      "className": "part-container has-drawer"
+    }, Content({
+      "prompt_add": "Click to add background information for this part.",
+      "prompt_edit": "Click to edit the background information for this part.",
+      "content": content,
+      "onSaveContent": this.onSaveBackground
+    }), QuestionList({
+      "collection": this.state.questions
+    }), Drawer({
+      "title": partTitle
+    }, Button({
+      "actionTitle": "Add a new question",
+      "actionText": "Add question",
+      "actionName": "AddQuestion",
+      "onAction": this.onAddQuestion
+    }), Button({
+      "actionTitle": "Delete this part",
+      "actionText": "Delete part",
+      "actionName": "DeletePart",
+      "onAction": this.onDeletePart
+    })));
+  }
+});
+
+module.exports = Part;
+
+
+},{"./action_button":281,"./action_drawer":282,"./content":285,"./question_list":290,"react":270,"react-addons":43}],288:[function(require,module,exports){
+var Part, PartList, React;
+
+React = require('react');
+
+React.Addons = require('react-addons');
+
+Part = require('./part');
+
+PartList = React.createClass({
+  displayName: 'PartList',
+  propTypes: {
+    collection: React.PropTypes.object.isRequired
+  },
+  render: function() {
+    var classes, parts;
+    parts = this.props.collection.map(function(model) {
+      return Part({
+        "key": model.id,
+        "model": model
+      });
+    });
+    classes = React.Addons.classSet({
+      numbered: parts.length > 1
+    });
+    return React.DOM.ol({
+      "className": classes
+    }, parts);
+  }
+});
+
+module.exports = PartList;
+
+
+},{"./part":287,"react":270,"react-addons":43}],289:[function(require,module,exports){
+var Button, ChoiceList, Content, Drawer, Question, React;
+
+React = require('react');
+
+React.addons = require('react-addons');
+
+Button = require('./action_button');
+
+ChoiceList = require('./choice_list');
+
+Content = require('./content');
+
+Drawer = require('./action_drawer');
+
+Question = React.createClass({
+  displayName: 'Question',
+  propTypes: {
+    model: React.PropTypes.object.isRequired
+  },
+  getStateFromModel: function() {
+    return {
+      content: this.props.model.get('stem'),
+      choices: this.props.model.get('choices')
+    };
+  },
+  getInitialState: function() {
+    return this.getStateFromModel();
+  },
+  refreshState: function() {
+    return this.setState(this.getStateFromModel());
+  },
+  componentDidMount: function() {
+    this.props.model.on('change', this.refreshState, this);
+    return this.state.choices.on('add remove change', this.refreshState, this);
+  },
+  componentWillUnmount: function() {
+    this.props.model.off('change', this.refreshState, this);
+    return this.state.choices.off('add remove change', this.refreshState, this);
+  },
+  onSaveStem: function(content) {
+    this.props.model.set({
+      stem: content
+    });
+    return this.props.model.save();
+  },
+  onDeleteQuestion: function() {
+    return this.props.model.destroy({
+      wait: true
+    });
+  },
+  onAddChoice: function(choiceType) {
+    return this.state.choices.create({
+      type: choiceType
+    }, {
+      wait: true
+    });
+  },
+  render: function() {
+    var content, questionIndex, questionTitle;
+    content = this.state.content;
+    questionIndex = this.props.model.collection.indexOf(this.props.model) + 1;
+    questionTitle = "Question " + questionIndex;
+    return React.DOM.div({
+      "className": "question-container has-drawer"
+    }, Content({
+      "prompt_add": "Click to add the question stem.",
+      "prompt_edit": "Click to edit the question stem.",
+      "content": content,
+      "onSaveContent": this.onSaveStem
+    }), ChoiceList({
+      "collection": this.state.choices
+    }), Drawer({
+      "title": questionTitle
+    }, Button({
+      "hidden": false,
+      "actionTitle": "Add a new choice",
+      "actionText": "Add choice",
+      "actionName": "simple",
+      "onAction": this.onAddChoice
+    }), Button({
+      "hidden": !this.props.model.canAddCombo(),
+      "actionTitle": "Add a new combo choice",
+      "actionText": "Add '(a) & (b)' choice",
+      "actionName": "combo",
+      "onAction": this.onAddChoice
+    }), Button({
+      "hidden": !this.props.model.canAddAll(),
+      "actionTitle": "Add a new choice",
+      "actionText": "Add 'All of the above' choice",
+      "actionName": "all",
+      "onAction": this.onAddChoice
+    }), Button({
+      "hidden": !this.props.model.canAddNone(),
+      "actionTitle": "Add a new choice",
+      "actionText": "Add 'None of the above' choice",
+      "actionName": "none",
+      "onAction": this.onAddChoice
+    }), Button({
+      "actionTitle": "Delete this question",
+      "actionText": "Delete question",
+      "actionName": "DeleteQuestion",
+      "onAction": this.onDeleteQuestion
+    })));
+  }
+});
+
+module.exports = Question;
+
+
+},{"./action_button":281,"./action_drawer":282,"./choice_list":284,"./content":285,"react":270,"react-addons":43}],290:[function(require,module,exports){
+var Question, QuestionList, React;
+
+React = require('react');
+
+React.Addons = require('react-addons');
+
+Question = require('./question');
+
+QuestionList = React.createClass({
+  displayName: 'QuestionList',
+  propTypes: {
+    collection: React.PropTypes.object.isRequired
+  },
+  render: function() {
+    var questions;
+    questions = this.props.collection.map(function(model) {
+      return Question({
+        "key": model.id,
+        "model": model
+      });
+    });
+    return React.DOM.ol(null, questions);
+  }
+});
+
+module.exports = QuestionList;
+
+
+},{"./question":289,"react":270,"react-addons":43}]},{},[280])
 
 
 //# sourceMappingURL=app.map
