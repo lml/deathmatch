@@ -2,15 +2,18 @@
 
 React = require 'react'
 React.Addons = require 'react-addons'
+
 ActionButton = React.createClass
 
   getDefaultProps: () ->
+    hidden: false
     actionText: ""
     buttonMainClass: "action"
     buttonTypeClass: "secondary"
     extraButtonClasses: []
 
   propTypes:
+    hidden: React.PropTypes.bool
     onAction: React.PropTypes.func.isRequired
     actionName: React.PropTypes.string.isRequired
     actionText: React.PropTypes.string.isRequired
@@ -20,7 +23,7 @@ ActionButton = React.createClass
     @props.onAction(@props.actionName)
 
   render: () ->
-    classes = {}
+    classes = hidden: @props.hidden
     classes[@props.buttonMainClass] = true
     classes[@props.buttonTypeClass] = true
 

@@ -2,6 +2,7 @@
 
 React = require 'react'
 React.Addons = require 'react-addons'
+
 Part = require './part'
 
 PartList = React.createClass

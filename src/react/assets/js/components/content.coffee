@@ -132,8 +132,18 @@ Content = React.createClass
       'mode-view': @state.mode is 'view' and hasContent
       'mode-prompt': @state.mode is 'view' and not hasContent
     <div className={classes}>
-      <Editor ref="editor" content={@props.content} onCancelEdit={@onCancelEdit} onSaveContent={@onSaveContent}/>
-      <Viewer content={@props.content} prompt_add={@props.prompt_add} prompt_edit={@props.prompt_edit} onEditContent={@onEditContent}/>
+      <Editor
+        ref="editor"
+        content={@props.content}
+        onCancelEdit={@onCancelEdit}
+        onSaveContent={@onSaveContent}
+        />
+      <Viewer
+        content={@props.content}
+        prompt_add={@props.prompt_add}
+        prompt_edit={@props.prompt_edit}
+        onEditContent={@onEditContent}
+        />
     </div>
 
 module.exports = Content

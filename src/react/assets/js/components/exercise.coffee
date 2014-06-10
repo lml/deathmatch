@@ -2,12 +2,14 @@
 
 React = require 'react'
 React.Addons = require 'react-addons'
+
+Button = require './action_button'
 Content = require './content'
 Drawer = require './action_drawer'
-Button = require './action_button'
 PartList = require './part_list'
 
 Exercise = React.createClass
+  displayName: 'Exercise'
 
   propTypes:
     model: React.PropTypes.object.isRequired
@@ -15,6 +17,9 @@ Exercise = React.createClass
   getStateFromModel: () ->
     content: @props.model.get('background')
     parts: @props.model.get('parts')
+
+  getInitialState: () ->
+    @getStateFromModel()
 
   refreshState: () ->
     @setState @getStateFromModel()
@@ -27,17 +32,12 @@ Exercise = React.createClass
     @props.model.off 'change', @refreshState, this
     @state.parts.off 'add remove change', @refreshState, this
 
-  getInitialState: () ->
-    @getStateFromModel()
-
   onSaveBackground: (content) ->
     @props.model.set({background: content});
-    @props.model.save().done () =>
-      @setState @getStateFromModel()
+    @props.model.save()
 
   onAddPart: () ->
-    parts = @props.model.get('parts')
-    parts.create {}, wait: true
+    @state.parts.create {}, wait: true
 
   render: () ->
     content = @state.content
@@ -54,7 +54,7 @@ Exercise = React.createClass
       <Drawer title="Exercise">
         <Button
           actionTitle="Add a new part"
-          actionText="Add Part"
+          actionText="Add part"
           actionName="AddPart"
           onAction={@onAddPart}
           />
