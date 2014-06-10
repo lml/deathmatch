@@ -40393,18 +40393,22 @@ ComboChoice = React.createClass({
 AllChoice = React.createClass({
   displayName: 'AllChoice',
   render: function() {
-    return React.DOM.span({
+    return React.DOM.div({
+      "class": "quantifier-choice-container viewer"
+    }, React.DOM.span({
       "class": "all-choice"
-    }, " All of the above ");
+    }, " All of the above "));
   }
 });
 
 NoneChoice = React.createClass({
   displayName: 'NoneChoice',
   render: function() {
-    return React.DOM.span({
+    return React.DOM.div({
+      "class": "quantifier-choice-container viewer"
+    }, React.DOM.span({
       "class": "none-choice"
-    }, " None of the above ");
+    }, " None of the above "));
   }
 });
 
