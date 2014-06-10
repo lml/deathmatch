@@ -13,7 +13,7 @@ QuestionList = React.createClass
 
   render: () ->
     questions = @props.collection.map (model) ->
-      <Question model={model} />
+      <Question key={model.id} model={model} />
     <ol>
       {questions}
     </ol>

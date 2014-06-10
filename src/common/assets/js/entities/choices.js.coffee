@@ -29,6 +29,9 @@ class Choices extends AssociatedCollection
   setPositionsFromIndex: () ->
     @each (model, index) => model.set(@positionField, index)
 
+  simples: () ->
+    @filter (c) -> c.type() is 'simple'
+
   move: (from, to) ->
     if from instanceof Backbone.Model then from = from.get(@positionField)
     @models.splice(to, 0, @models.splice(from, 1)[0]);

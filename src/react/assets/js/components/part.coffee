@@ -44,6 +44,8 @@ Part = React.createClass
 
   render: () ->
     content = @state.content
+    partIndex = @props.model.collection.indexOf(@props.model) + 1
+    partTitle = "Part #{partIndex}"
     <li className="part-container has-drawer">
       <Content
         prompt_add="Click to add background information for this part."
@@ -54,7 +56,7 @@ Part = React.createClass
       <QuestionList
         collection={@state.questions}
       />
-      <Drawer title="Part">
+      <Drawer title={partTitle}>
         <Button
           actionTitle="Add a new question"
           actionText="Add question"

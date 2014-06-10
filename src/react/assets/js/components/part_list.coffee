@@ -13,7 +13,7 @@ PartList = React.createClass
 
   render: () ->
     parts = @props.collection.map (model) ->
-      <Part model={model} />
+      <Part key={model.id} model={model} />
     classes = React.Addons.classSet
       numbered:  parts.length > 1
     <ol className={classes}>

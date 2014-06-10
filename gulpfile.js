@@ -249,8 +249,10 @@ gulp.task('serve', function() {
             cb(conf);
         });
     };
-    watchAndBuild(sourcePaths.html, runHTML);
-    watchAndBuild(sourcePaths.stylus, runStylus);
+    for (var project in sourcePaths) {
+      watchAndBuild(sourcePaths[project].html, runHTML);
+      watchAndBuild(sourcePaths[project].stylus, runStylus);
+    }
     build(conf);
     gulp.watch(folders.dest + "/**", {
         maxListeners: 999

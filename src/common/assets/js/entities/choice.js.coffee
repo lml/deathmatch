@@ -4,14 +4,6 @@ _ = require 'underscore'
 
 class Choice extends Backbone.AssociatedModel
 
-  relations: [
-    {
-      type: Backbone.Many,
-      key: 'combos'
-      relatedModel: Choice,
-    }
-  ]
-
   question: () ->
     @collection.owner()
 
@@ -60,11 +52,24 @@ class Choice extends Backbone.AssociatedModel
       if res then res[0].compare(res[1]) else tied
     else result
 
+  setSelections: (ids) ->
+    if @type() is 'combo'
+      # TODO: Validate ids.
+      @set({'combos': ids})
+
+  selections: () ->
+    if @type() is 'combo'
+      simples = @collection.filter (c) => c.type() is 'simple'
+      combos = @get('combos')
+      selected = (simple) ->
+        _.contains(combos, simple.get('id'))
+      statuses = {}
+      ([simple, selected(simple)] for simple in simples)
+
   combos: () ->
-    self = this
-    if @type() isnt 'simple'
-      selections = @get('combos').map (csc) ->
-        self.collection.get(csc.get 'choice_id')
+    if @type() is 'combo'
+      selections = @get('combos').map (csc) =>
+        @collection.get(csc)
       _.sortBy selections, (sc) -> sc.position()
 
   moveUp: () ->

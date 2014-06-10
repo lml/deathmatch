@@ -4,6 +4,7 @@ React = require 'react'
 React.addons = require 'react-addons'
 
 Button = require './action_button'
+ChoiceList = require './choice_list'
 Content = require './content'
 Drawer = require './action_drawer'
 
@@ -39,10 +40,12 @@ Question = React.createClass
     @props.model.destroy {wait: true}
 
   onAddChoice: (choiceType) ->
-    false
+    @state.choices.create {type: choiceType}, wait: true
 
   render: () ->
     content = @state.content
+    questionIndex = @props.model.collection.indexOf(@props.model) + 1
+    questionTitle = "Question #{questionIndex}"
     <div className="question-container has-drawer">
       <Content
         prompt_add="Click to add the question stem."
@@ -50,33 +53,34 @@ Question = React.createClass
         content={content}
         onSaveContent={@onSaveStem}
         />
-      <Drawer title="Question">
+      <ChoiceList collection={@state.choices} />
+      <Drawer title={questionTitle}>
         <Button
           hidden=false
           actionTitle="Add a new choice"
           actionText="Add choice"
-          actionName="AddChoice"
+          actionName="simple"
           onAction={@onAddChoice}
           />
         <Button
           hidden={not @props.model.canAddCombo()}
           actionTitle="Add a new combo choice"
           actionText="Add '(a) & (b)' choice"
-          actionName="AddComboChoice"
+          actionName="combo"
           onAction={@onAddChoice}
           />
         <Button
           hidden={not @props.model.canAddAll()}
           actionTitle="Add a new choice"
           actionText="Add 'All of the above' choice"
-          actionName="AddAllChoice"
+          actionName="all"
           onAction={@onAddChoice}
           />
         <Button
           hidden={not @props.model.canAddNone()}
           actionTitle="Add a new choice"
           actionText="Add 'None of the above' choice"
-          actionName="AddNoneChoice"
+          actionName="none"
           onAction={@onAddChoice}
           />
         <Button
