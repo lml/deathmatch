@@ -17,7 +17,7 @@ Viewer = React.createClass
     @props.onEditContent()
 
   render: () ->
-    if @props.content?
+    if @props.content? and @props.content isnt ""
       <div className="viewer-container hoverable">
         <button className="action secondary on-hover"
           title={@props.prompt_edit}
@@ -125,7 +125,7 @@ Content = React.createClass
     @props.onSaveContent(content)
 
   render: () ->
-    hasContent = @props.content?
+    hasContent = @props.content? and @props.content isnt ""
     classes = React.addons.classSet
       'content-container': true
       'mode-edit': @state.mode is 'edit'
