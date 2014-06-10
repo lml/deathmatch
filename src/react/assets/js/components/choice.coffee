@@ -172,10 +172,10 @@ Choice = React.createClass
     @props.model.destroy {wait: true}
 
   onMoveChoiceUp: () ->
-    false
+    @props.model.moveUp()
 
   onMoveChoiceDown: () ->
-    false
+    @props.model.moveDown()
 
   render: () ->
     content = @state.content

@@ -115,6 +115,21 @@ deathMatch.stub = function() {
         };
     };
 
+    self.updateChoices = function(exerciseId, partId, questionId, data) {
+        var part = self.findPart(exerciseId, partId);
+        var questions = part.questions;
+        var question = self.findQuestion(exerciseId, partId, questionId);
+        var choices = question.choices;
+        if (data.order) {
+          _.each(choices, function (choice) {
+              choice.position = data.order[choice.id];
+          });
+          return {success: true};
+        } else {
+            return {success: false};
+        }
+    };
+
     self.addChoice = function(exerciseId, partId, questionId, data) {
         var part = self.findPart(exerciseId, partId);
         var questions = part.questions;
@@ -201,6 +216,10 @@ fauxServer
     .del("/api/exercises/:exerciseId/parts/:partId/questions/:questionId",
         function(context, exerciseId, partId, questionId) {
             return exercise.removeQuestion(exerciseId, partId, questionId);
+        })
+    .put("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
+        function(context, exerciseId, partId, questionId) {
+            return exercise.updateChoices(exerciseId, partId, questionId, context.data);
         })
     .post("/api/exercises/:exerciseId/parts/:partId/questions/:questionId/choices",
         function(context, exerciseId, partId, questionId) {

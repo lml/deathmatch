@@ -1,8 +1,8 @@
 Marionette = require 'marionette'
-ExerciseModel = require './entities/exercise.js.coffee'
+ExerciseModel = require '../../../common/assets/js/entities/exercise.js.coffee'
 ExerciseView = require './views/exercise.js.coffee'
-PartsCollection = require './entities/parts.js.coffee'
-require './stubs/api.js'
+PartsCollection = require '../../../common/assets/js/entities/parts.js.coffee'
+require '../../../common/assets/js/stubs/api.js'
 
 ExerciseEditor = new Marionette.Application
 
