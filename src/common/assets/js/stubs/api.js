@@ -121,12 +121,16 @@ deathMatch.stub = function() {
         var question = self.findQuestion(exerciseId, partId, questionId);
         var choices = question.choices;
         if (data.order) {
-          _.each(choices, function (choice) {
-              choice.position = data.order[choice.id];
-          });
-          return {success: true};
+            _.each(choices, function(choice) {
+                choice.position = data.order[choice.id];
+            });
+            return {
+                success: true
+            };
         } else {
-            return {success: false};
+            return {
+                success: false
+            };
         }
     };
 
@@ -181,6 +185,7 @@ deathMatch.stub = function() {
             removeQuestion: self.removeQuestion,
             addChoice: self.addChoice,
             updateChoice: self.updateChoice,
+            updateChoices: self.updateChoices,
             removeChoice: self.removeChoice
         }
     };

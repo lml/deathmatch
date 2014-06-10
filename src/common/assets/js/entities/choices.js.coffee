@@ -11,6 +11,7 @@ class Choices extends AssociatedCollection
 
   initialize: () ->
     @listenTo this, 'add remove sort', @setPositionsFromIndex
+    @listenTo this, 'change:combos', () => @sort()
 
   comparator: (left, right) ->
     left.compare(right)

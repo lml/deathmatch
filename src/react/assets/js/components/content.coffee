@@ -35,6 +35,10 @@ Viewer = React.createClass
 Editor = React.createClass
   displayName: 'ContentEditor'
 
+  getInitialState: () ->
+    objects:
+      editor: null
+
   propTypes:
     content: React.PropTypes.string
 
@@ -45,25 +49,31 @@ Editor = React.createClass
     theme: 'snow'
 
   focus: () ->
-    @state.editor.focus()
+    @state.objects.editor.focus()
 
-  componentDidMount: () ->
+  initializeEditor: () ->
     editor = new Quill @refs.editor.getDOMNode(), theme: @props.theme
     editor.addModule 'toolbar',
       container: @refs.toolbar.getDOMNode()
     editor.addModule 'toolbar',
       container: @refs.footer.getDOMNode()
     editor.setHTML @props.content
-    @setState editor: editor
+    @state.objects.editor = editor
+
+  componentDidMount: () ->
+    @initializeEditor()
+
+  componentDidUpdate: () ->
+    @initializeEditor()
 
   componentWillReceiveProps: (newprops) ->
-    editor = @state.editor.setHTML newprops.content
+    @state.objects.editor.setHTML newprops.content
 
   handleSave: () ->
-    @props.onSaveContent(@state.editor.getHTML())
+    @props.onSaveContent(@state.objects.editor.getHTML())
 
   handleCancel: () ->
-    @props.onCancelEdit(@state.editor.getHTML())
+    @props.onCancelEdit(@state.objects.editor.getHTML())
 
   render: () ->
     <div className="editor-container">

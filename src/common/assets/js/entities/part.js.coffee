@@ -1,5 +1,5 @@
 Backbone = require 'backbone'
-require 'backbone_associations'
+require 'backbone-associations'
 Questions = require './questions.js.coffee'
 
 class Part extends Backbone.AssociatedModel

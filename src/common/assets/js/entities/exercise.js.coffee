@@ -1,5 +1,5 @@
 Backbone = require 'backbone'
-require 'backbone_associations'
+require 'backbone-associations'
 Part = require './part.js.coffee'
 Parts = require './parts.js.coffee'
 

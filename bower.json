@@ -21,6 +21,8 @@
     "backbone": "1.1.*",
     "underscore": "1.6.*",
     "marionette": "2.*",
+    "backbone.wreqr": "",
+    "backbone.babysitter": "",
     "backbone-associations": "0.*",
     "backbone-faux-server": "0.*",
     "jquery": "2.*"

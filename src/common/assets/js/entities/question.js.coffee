@@ -1,5 +1,5 @@
 Backbone = require 'backbone'
-require 'backbone_associations'
+require 'backbone-associations'
 Choices = require './choices.js.coffee'
 _ = require 'underscore'
 

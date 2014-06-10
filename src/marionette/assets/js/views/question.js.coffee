@@ -4,6 +4,7 @@ ContentEditable = require '../behaviors/content_editable.js.coffee'
 Actionable = require '../behaviors/actionable.js.coffee'
 Deleteable = require '../behaviors/deleteable.js.coffee'
 $ = require 'jquery'
+_ = require 'underscore'
 
 class Question extends Marionette.LayoutView
 

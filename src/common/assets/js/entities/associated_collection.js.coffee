@@ -1,5 +1,5 @@
 Backbone = require 'backbone'
-require 'backbone_associations'
+require 'backbone-associations'
 
 class AssociatedCollection extends Backbone.Collection
   owner: () ->

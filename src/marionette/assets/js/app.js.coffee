@@ -1,3 +1,6 @@
+Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
+Backbone._ = require 'underscore'
 Marionette = require 'marionette'
 ExerciseModel = require '../../../common/assets/js/entities/exercise.js.coffee'
 ExerciseView = require './views/exercise.js.coffee'

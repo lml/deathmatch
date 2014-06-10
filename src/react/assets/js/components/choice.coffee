@@ -135,13 +135,17 @@ AllChoice = React.createClass
   displayName: 'AllChoice'
 
   render: () ->
-    <span class="all-choice"> All of the above </span>
+    <div className="quantifier-choice-container viewer">
+      <span className="all-choice"> All of the above </span>
+    </div>
 
 NoneChoice = React.createClass
   displayName: 'NoneChoice'
 
   render: () ->
-    <span class="none-choice"> None of the above </span>
+    <div className="quantifier-choice-container viewer">
+      <span className="none-choice"> None of the above </span>
+    </div>
 
 Choice = React.createClass
   displayName: 'Choice'

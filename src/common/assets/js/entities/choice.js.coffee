@@ -1,5 +1,5 @@
 Backbone = require 'backbone'
-require 'backbone_associations'
+require 'backbone-associations'
 _ = require 'underscore'
 
 class Choice extends Backbone.AssociatedModel
@@ -49,8 +49,8 @@ class Choice extends Backbone.AssociatedModel
       res = _.find(
               _.zip(@combos(), other.combos()),
                 ([l, r]) -> l.compare(r) isnt tied)
-      if res then res[0].compare(res[1]) else tied
-    else result
+      result = if res then res[0].compare(res[1]) else tied
+    result
 
   setSelections: (ids) ->
     if @type() is 'combo'

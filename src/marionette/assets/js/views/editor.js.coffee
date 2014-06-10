@@ -1,4 +1,4 @@
-Marionett = require 'marionette'
+Marionette = require 'marionette'
 Quill = require 'quilljs'
 
 class Editor extends Marionette.ItemView
