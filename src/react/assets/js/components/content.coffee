@@ -18,7 +18,7 @@ Viewer = React.createClass
 
   render: () ->
     if @props.content? and @props.content isnt ""
-      <div className="viewer-container hoverable">
+      <div className="viewer-container hoverable" onClick={@handleEdit}>
         <button className="action secondary on-hover"
           title={@props.prompt_edit}
           onClick={@handleEdit}>Edit</button>

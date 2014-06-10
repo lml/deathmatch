@@ -31,7 +31,7 @@ ComboChoiceViewer = React.createClass
       else
         "Invalid selections. Please edit to fix."
 
-    <div className="combo-choice-viewer viewer-container hoverable">
+    <div className="combo-choice-viewer viewer-container hoverable" onClick={@handleEdit}>
       <button className="action secondary on-hover"
               title="Edit combo choice"
               onClick={@handleEdit}>

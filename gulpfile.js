@@ -9,6 +9,7 @@ var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
     nib = require('nib'),
     uglify = require('gulp-uglify'),
+    streamify = require('gulp-streamify'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
     notify = require('gulp-notify'),
@@ -21,7 +22,6 @@ var gulp = require('gulp'),
     vsource = require('vinyl-source-stream'),
     vtrans = require('vinyl-transform'),
     browserify = require('browserify'),
-    globalShim = require('browserify-global-shim'),
     cjsxify = require('cjsxify'),
     bowerResolve = require('bower-resolve'),
     debowerify = require('debowerify'),
@@ -58,53 +58,44 @@ gulp.task('clean', function() {
         .pipe(clean());
 });
 
-function browserifyAppShims(config) {
-    return  {
-      "jquery": "$",
-      "underscore": "_",
-      "backbone": "Backbone",
-      "backbone.babysitter": "Backbone.Babysitter",
-      "backbone-faux-server": "fauxServer",
-      "backbone.wreqr": "global:Backbone.Wreqr",
-      "marionette": "Marionette",
-      "backbone-associations": "Backbone.AssociatedModel",
-      "quilljs": "Quill",
-      "React": "react",
-      "react-addons":  "addons"
-  };
-}
-
 function appify(config, paths, extra) {
     var xify = config.live ? watchify : browserify;
     bowerResolve.init(function() {
         var bundler = xify({
-            entries: paths.entries,
-            extensions: ['.js', '.coffee']
-        })
-          .external('quilljs')
-          .external(bowerResolve('jquery'))
-          .external(bowerResolve('underscore'))
-          .external(bowerResolve('backbone'))
-          .external(bowerResolve('backbone-associations'))
-          .external(bowerResolve('backbone-faux-server'));
-          if (extra) {
-              bundler = extra(bundler);
-          }
-          bundler.transform('cjsxify')
-                 .transform('debowerify');
+                entries: paths.entries,
+                extensions: ['.js', '.coffee']
+            })
+            .external('quilljs')
+            .external(bowerResolve('jquery'))
+            .external(bowerResolve('underscore'))
+            .external(bowerResolve('backbone'))
+            .external(bowerResolve('backbone-associations'))
+            .external(bowerResolve('backbone-faux-server'));
+        if (extra) {
+            bundler = extra(bundler);
+        }
+        bundler.transform('cjsxify')
+            .transform('debowerify');
 
         mkdirp.sync(paths.dest);
         var bundle = function() {
-            bundler
+            var map = paths.dest + '/' + paths.sourceName + '.map';
+            var minmap = paths.dest + '/' + paths.sourceName + '.min.map';
+            var processed = bundler
                 .bundle({
                     debug: config.dev
                 })
                 .on('error', handleErrors("Browserify error"))
                 .pipe(vsource(paths.sourceName))
                 .pipe(vtrans(function() {
-                    return exorcist(paths.dest + '/' + paths.sourceName + '.map');
-                }))
-                .pipe(gulp.dest(paths.dest));
+                    return exorcist(map);
+                }));
+            if (!config.dev) {
+                processed = processed.pipe(streamify(uglify({
+                    outSourceMap: minmap
+                })));
+            }
+            processed.pipe(gulp.dest(paths.dest));
         };
         if (config.live) {
             bundler.on('update', bundle);
@@ -117,23 +108,49 @@ function marionetteLib(config) {
     var xify = config.live ? watchify : browserify;
     bowerResolve.init(function() {
         var bundler = xify()
-                          .require('quilljs')
-                          .require(bowerResolve('jquery'), {expose: 'jquery'})
-                          .require(bowerResolve('underscore'), {expose: 'underscore'})
-                          .require(bowerResolve('backbone'), {expose: 'backbone'})
-                          .require(bowerResolve('backbone.wreqr'), {expose: 'backbone.wreqr'})
-                          .require(bowerResolve('backbone.babysitter'), {expose: 'backbone.babysitter'})
-                          .require(bowerResolve('marionette'), {expose: 'marionette'})
-                          .require(bowerResolve('backbone-associations'), {expose: 'backbone-associations'})
-                          .require(bowerResolve('backbone-faux-server'), {expose: 'backbone-faux-server'});
+            .require('quilljs')
+            .require(bowerResolve('jquery'), {
+                expose: 'jquery'
+            })
+            .require(bowerResolve('underscore'), {
+                expose: 'underscore'
+            })
+            .require(bowerResolve('backbone'), {
+                expose: 'backbone'
+            })
+            .require(bowerResolve('backbone.wreqr'), {
+                expose: 'backbone.wreqr'
+            })
+            .require(bowerResolve('backbone.babysitter'), {
+                expose: 'backbone.babysitter'
+            })
+            .require(bowerResolve('marionette'), {
+                expose: 'marionette'
+            })
+            .require(bowerResolve('backbone-associations'), {
+                expose: 'backbone-associations'
+            })
+            .require(bowerResolve('backbone-faux-server'), {
+                expose: 'backbone-faux-server'
+            });
         var bundle = function() {
-            bundler.bundle({debug: config.dev})
-                    .on('error', handleErrors("Browserify error"))
-                    .pipe(vsource('lib.js'))
-                    .pipe(vtrans(function() {
-                        return exorcist(folders.dest + '/lib.js.map');
-                    }))
-                    .pipe(gulp.dest(folders.dest + '/marionette/assets/js'));
+            var dest = "./" + folders.dest + '/marionette/assets/js';
+            var map = dest + '/lib.js.map';
+            var minmap = dest + '/lib.js.min.map';
+            var processed = bundler.bundle({
+                    debug: config.dev
+                })
+                .on('error', handleErrors("Browserify error"))
+                .pipe(vsource('lib.js'))
+                .pipe(vtrans(function() {
+                    return exorcist(dest + '/lib.js.map');
+                }));
+            if (!config.dev) {
+                processed = processed.pipe(streamify(uglify({
+                    outSourceMap: minmap
+                })));
+            }
+            processed.pipe(gulp.dest(dest));
         };
         if (config.live) {
             bundler.on('update', bundle);
@@ -146,9 +163,9 @@ function marionetteApp(config) {
     var mainSrc = './' + folders.src + '/marionette/assets/js/app.js.coffee';
     var extra = function(bundler) {
         return bundler
-                .external(bowerResolve('backbone.wreqr'))
-                .external(bowerResolve('backbone.babysitter'))
-                .external(bowerResolve('marionette'));
+            .external(bowerResolve('backbone.wreqr'))
+            .external(bowerResolve('backbone.babysitter'))
+            .external(bowerResolve('marionette'));
     };
     appify(config, {
         entries: [mainSrc],
@@ -161,22 +178,42 @@ function reactLib(config) {
     var xify = config.live ? watchify : browserify;
     bowerResolve.init(function() {
         var bundler = xify()
-                          .require('quilljs')
-                          .require('react')
-                          .require('react-addons')
-                          .require(bowerResolve('jquery'), {expose: 'jquery'})
-                          .require(bowerResolve('underscore'), {expose: 'underscore'})
-                          .require(bowerResolve('backbone'), {expose: 'backbone'})
-                          .require(bowerResolve('backbone-associations'), {expose: 'backbone-associations'})
-                          .require(bowerResolve('backbone-faux-server'), {expose: 'backbone-faux-server'});
+            .require('quilljs')
+            .require('react')
+            .require('react-addons')
+            .require(bowerResolve('jquery'), {
+                expose: 'jquery'
+            })
+            .require(bowerResolve('underscore'), {
+                expose: 'underscore'
+            })
+            .require(bowerResolve('backbone'), {
+                expose: 'backbone'
+            })
+            .require(bowerResolve('backbone-associations'), {
+                expose: 'backbone-associations'
+            })
+            .require(bowerResolve('backbone-faux-server'), {
+                expose: 'backbone-faux-server'
+            });
         var bundle = function() {
-            bundler.bundle({debug: config.dev})
-                    .on('error', handleErrors("Browserify error"))
-                    .pipe(vsource('lib.js'))
-                    .pipe(vtrans(function() {
-                        return exorcist(folders.dest + '/lib.js.map');
-                    }))
-                    .pipe(gulp.dest(folders.dest + '/react/assets/js'));
+            var dest = folders.dest + '/react/assets/js';
+            var map = dest + '/lib.js.map';
+            var minmap = dest + '/lib.js.min.map';
+            var processed = bundler.bundle({
+                    debug: config.dev
+                })
+                .on('error', handleErrors("Browserify error"))
+                .pipe(vsource('lib.js'))
+                .pipe(vtrans(function() {
+                    return exorcist(map);
+                }));
+            if (!config.dev) {
+                processed = processed.pipe(streamify(uglify({
+                    outSourceMap: minmap
+                })));
+            }
+            processed.pipe(gulp.dest(dest));
         };
         if (config.live) {
             bundler.on('update', bundle);
@@ -189,8 +226,8 @@ function reactApp(config) {
     var mainSrc = './' + folders.src + '/react/assets/js/app.coffee';
     var extra = function(bundler) {
         return bundler
-                .external('react')
-                .external('react-addons');
+            .external('react')
+            .external('react-addons');
     };
     appify(config, {
         entries: [mainSrc],
@@ -296,11 +333,7 @@ function build(config) {
     runCSS(config);
 }
 
-gulp.task('serve', function() {
-    var conf = {
-        live: true,
-        dev: true
-    };
+function serve(conf) {
     var server = connect(),
         reloader = livereload();
 
@@ -324,6 +357,22 @@ gulp.task('serve', function() {
     });
     var app = server.use(static(folders.dest));
     http.createServer(app).listen(8081);
+}
+
+gulp.task('serve', function() {
+    var conf = {
+        live: true,
+        dev: true
+    };
+    serve(conf);
+});
+
+gulp.task('smoke', function() {
+    var conf = {
+        live: true,
+        dev: false
+    };
+    serve(conf);
 });
 
 gulp.task('dev', function() {
