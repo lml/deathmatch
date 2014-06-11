@@ -3,7 +3,7 @@ Marionette = require 'marionette'
 class Actions extends Marionette.ItemView
 
   initialize: () ->
-    @template = "#" + "#{@model.constructor.name.toLowerCase()}-actions-template"
+    @template = "#" + "#{@model.resourceName()}-actions-template"
     @listenTo @model.collection, 'change add remove', @rerender
 
   rerender: () ->
