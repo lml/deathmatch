@@ -1,5 +1,6 @@
-Backbone = require 'backbone'
 AssociatedCollection = require './associated_collection.js.coffee'
+Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
 Choice = require './choice.js.coffee'
 $ = require 'jquery'
 _ = require 'underscore'
@@ -8,6 +9,9 @@ class Choices extends AssociatedCollection
   model: Choice
 
   positionField: 'position'
+
+  resourceName: () ->
+    "choices"
 
   initialize: () ->
     @listenTo this, 'add remove sort', @setPositionsFromIndex

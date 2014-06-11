@@ -4,5 +4,8 @@ Question = require './question.js.coffee'
 class Questions extends AssociatedCollection
   model: Question
 
+  resourceName: () ->
+    "questions"
+
 
 module.exports = Questions

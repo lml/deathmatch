@@ -1,8 +1,12 @@
 Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
 require 'backbone-associations'
 Questions = require './questions.js.coffee'
 
 class Part extends Backbone.AssociatedModel
+
+  resourceName: () ->
+    "part"
 
   defaults:
     position: -1,

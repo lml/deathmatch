@@ -1,4 +1,5 @@
 Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
 require 'backbone-associations'
 
 class AssociatedCollection extends Backbone.Collection

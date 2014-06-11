@@ -1,8 +1,12 @@
 Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
 require 'backbone-associations'
 _ = require 'underscore'
 
 class Choice extends Backbone.AssociatedModel
+
+  resourceName: () ->
+    "choice"
 
   question: () ->
     @collection.owner()

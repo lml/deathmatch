@@ -1,9 +1,13 @@
 Backbone = require 'backbone'
+Backbone.$ = require 'jquery'
 require 'backbone-associations'
 Choices = require './choices.js.coffee'
 _ = require 'underscore'
 
 class Question extends Backbone.AssociatedModel
+
+  resourceName: () ->
+    "question"
 
   defaults:
     type: 'multiple_choice_question'
