@@ -141,19 +141,24 @@ Content = React.createClass
       'mode-edit': @state.mode is 'edit'
       'mode-view': @state.mode is 'view' and hasContent
       'mode-prompt': @state.mode is 'view' and not hasContent
-    <div className={classes}>
+    editor = () =>
       <Editor
         ref="editor"
         content={@props.content}
         onCancelEdit={@onCancelEdit}
         onSaveContent={@onSaveContent}
         />
+    viewer = () =>
       <Viewer
         content={@props.content}
         prompt_add={@props.prompt_add}
         prompt_edit={@props.prompt_edit}
         onEditContent={@onEditContent}
         />
+
+    item = if @state.mode is 'edit' then editor() else viewer()
+    <div className={classes}>
+      {item}
     </div>
 
 module.exports = Content
