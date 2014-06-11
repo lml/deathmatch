@@ -63,6 +63,7 @@ ComboChoiceEditor = React.createClass
 
   handleClick: (event) ->
     event.currentTarget.getElementsByTagName('input')[0].checked = true;
+    @handleChange()
 
   handleSave: () ->
     @props.model.setSelections @state.selections
@@ -77,7 +78,8 @@ ComboChoiceEditor = React.createClass
   render: () ->
     selections = @state.selections
     renderCheckbox = (choice) =>
-      <div className='choice-selector-container' onClick={@handleClick} >
+      key = "choice-selector-editor-#{choice.get('id')}"
+      <div key={key} className='choice-selector-container' onClick={@handleClick} >
         <input type='checkbox'
                onChange={@handleChange}
                value={choice.get('id')}
