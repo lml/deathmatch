@@ -66,11 +66,11 @@ function appify(config, paths, extra) {
                 extensions: ['.js', '.coffee']
             })
             .external('quilljs')
-            .external(bowerResolve('jquery'))
-            .external(bowerResolve('underscore'))
-            .external(bowerResolve('backbone'))
-            .external(bowerResolve('backbone-associations'))
-            .external(bowerResolve('backbone-faux-server'));
+            .external('jquery')
+            .external('underscore')
+            .external('backbone')
+            .external('backbone-associations')
+            .external('backbone-faux-server');
         if (extra) {
             bundler = extra(bundler);
         }
@@ -82,9 +82,7 @@ function appify(config, paths, extra) {
             var map = paths.dest + '/' + paths.sourceName + '.map';
             var minmap = paths.dest + '/' + paths.sourceName + '.min.map';
             var processed = bundler
-                .bundle({
-                    debug: config.dev
-                })
+                .bundle()
                 .on('error', handleErrors("Browserify error"))
                 .pipe(vsource(paths.sourceName))
                 .pipe(vtrans(function() {
@@ -137,9 +135,7 @@ function marionetteLib(config) {
             var dest = "./" + folders.dest + '/marionette/assets/js';
             var map = dest + '/lib.js.map';
             var minmap = dest + '/lib.js.min.map';
-            var processed = bundler.bundle({
-                    debug: config.dev
-                })
+            var processed = bundler.bundle()
                 .on('error', handleErrors("Browserify error"))
                 .pipe(vsource('lib.js'))
                 .pipe(vtrans(function() {
@@ -200,9 +196,7 @@ function reactLib(config) {
             var dest = folders.dest + '/react/assets/js';
             var map = dest + '/lib.js.map';
             var minmap = dest + '/lib.js.min.map';
-            var processed = bundler.bundle({
-                    debug: config.dev
-                })
+            var processed = bundler.bundle()
                 .on('error', handleErrors("Browserify error"))
                 .pipe(vsource('lib.js'))
                 .pipe(vtrans(function() {
@@ -361,7 +355,7 @@ function serve(conf) {
 
 gulp.task('serve', function() {
     var conf = {
-        live: true,
+        live: false,
         dev: true
     };
     serve(conf);
