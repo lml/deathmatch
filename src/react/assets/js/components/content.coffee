@@ -59,6 +59,9 @@ Editor = React.createClass
       container: @refs.footer.getDOMNode()
     editor.setHTML @props.content
     @state.objects.editor = editor
+    # Focus the editor at the end of the text
+    len = editor.getLength() - 1
+    editor.setSelection(len, len)
 
   componentDidMount: () ->
     @initializeEditor()
@@ -123,7 +126,6 @@ Content = React.createClass
   onEditContent: () ->
     @setState
       mode: 'edit'
-    @refs.editor.focus()
 
   onCancelEdit: () ->
     @setState
