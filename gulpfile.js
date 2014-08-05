@@ -59,12 +59,11 @@ gulp.task('clean', function() {
 });
 
 function appify(config, paths, extra) {
-    var xify = config.live ? watchify : browserify;
+    var args = config.live ? watchify.args : {};
+    args.entries = paths.entries;
+    args.extensions = ['.js', '.coffee'];
     bowerResolve.init(function() {
-        var bundler = xify({
-                entries: paths.entries,
-                extensions: ['.js', '.coffee']
-            })
+        var bundler = browserify(args)
             .external('quilljs')
             .external('jquery')
             .external('underscore')
@@ -76,6 +75,10 @@ function appify(config, paths, extra) {
         }
         bundler.transform('cjsxify')
             .transform('debowerify');
+
+        if (config.live) {
+            bundler = watchify(bundler, {});
+        }
 
         mkdirp.sync(paths.dest);
         var bundle = function() {
@@ -103,9 +106,9 @@ function appify(config, paths, extra) {
 }
 
 function marionetteLib(config) {
-    var xify = config.live ? watchify : browserify;
+    var args = config.live ? watchify.args : {};
     bowerResolve.init(function() {
-        var bundler = xify()
+        var bundler = browserify(args)
             .require('quilljs')
             .require(bowerResolve('jquery'), {
                 expose: 'jquery'
@@ -131,6 +134,10 @@ function marionetteLib(config) {
             .require(bowerResolve('backbone-faux-server'), {
                 expose: 'backbone-faux-server'
             });
+
+        if (config.live) {
+            bundler = watchify(bundler, {});
+        }
         var bundle = function() {
             var dest = "./" + folders.dest + '/marionette/assets/js';
             var map = dest + '/lib.js.map';
@@ -171,9 +178,9 @@ function marionetteApp(config) {
 }
 
 function reactLib(config) {
-    var xify = config.live ? watchify : browserify;
+    var args = config.live ? watchify.args : {};
     bowerResolve.init(function() {
-        var bundler = xify()
+        var bundler = browserify(args)
             .require('quilljs')
             .require('react')
             .require('react-addons')
@@ -192,6 +199,11 @@ function reactLib(config) {
             .require(bowerResolve('backbone-faux-server'), {
                 expose: 'backbone-faux-server'
             });
+
+        if (config.live) {
+            bundler = watchify(bundler, {});
+        }
+
         var bundle = function() {
             var dest = folders.dest + '/react/assets/js';
             var map = dest + '/lib.js.map';
@@ -355,7 +367,7 @@ function serve(conf) {
 
 gulp.task('serve', function() {
     var conf = {
-        live: false,
+        live: true,
         dev: true
     };
     serve(conf);
